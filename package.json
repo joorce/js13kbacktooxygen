@@ -1,0 +1,19 @@
+{
+  "name": "js13k-backtooxygen",
+  "version": "1.0.0",
+  "description": "Convert all polution molecules back to oxygen",
+  "main": "main.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jose Ortega",
+  "license": "ISC",
+  "dependencies": {},
+  "devDependencies": {
+    "rollup": "^1.19.4",
+    "rollup-plugin-babel-minify": "^9.0.0"
+  }
+}
