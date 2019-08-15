@@ -1,7 +1,10 @@
-(function(){'use strict';function a(){// animate
+(function(){'use strict';function a(){let a=window.innerWidth,b=window.innerHeight;var c=Math.min(a/f,b/g);d.style.width=a+"px",d.style.height=b+"px",d.width=a,d.height=b,console.log(e.getTransform());let h=a/2-320*c;console.log(h,c),e.setTransform(c,0,// or use scaleFillNative 
+0,c,h,b/2-180*c)}function b(){// animate
 // Debug
-requestAnimationFrame(a),d.clearRect(0,0,window.innerWidth,window.innerHeight),e.update(),e.draw(),d.save(),d.lineWidth=10,d.strokeStyle="purple",d.strokeRect(0,0,window.innerWidth,window.innerHeight),d.restore()}const b=2*Math.PI;let c=document.getElementsByTagName("canvas")[0];c.width=window.innerWidth,c.height=window.innerHeight;let d=c.getContext("2d");// ctx.fillRect(100, 100, 30, 30)
-let e=new class{// Circle
+requestAnimationFrame(b),e.clearRect(0,-0,f,g),h.update(),h.draw(),e.save(),e.lineWidth=1,e.strokeStyle="purple",e.strokeRect(0,0,f,g),e.restore()}const c=2*Math.PI,d=document.getElementsByTagName("canvas")[0];let e=d.getContext("2d");// Resolution
+// const nativeWidth = 320
+// const nativeHeight = 240
+const f=640,g=360;a(),window.addEventListener("resize",()=>{a()});let h=new class{// Circle
 /**
          * Entity constructor
          * @param {CanvasRenderingContext2D} ctx The rendering context of this entity
@@ -12,4 +15,5 @@ let e=new class{// Circle
          * @param {number} radius Radius of entity
          */constructor(a,b,c,d,e,f){/** @private 
              * @property {CanvasRenderingContext2D} c The rendering context of this entity
-             */this.c=a,this.x=b,this.y=c,this.dx=d,this.dy=e,this.radius=f}draw(){this.c.save(),this.c.beginPath(),this.c.arc(this.x,this.y,this.radius,0,b),this.c.strokeStyle="blue",this.c.stroke(),this.c.restore()}update(){this.checkBounds(),this.x+=this.dx,this.y+=this.dy}checkBounds(){(this.x+this.radius>innerWidth||0>this.x-this.radius)&&(this.dx=-this.dx),(this.y+this.radius>innerHeight||0>this.y-this.radius)&&(this.dy=-this.dy)}}(d,50,200,1,1,30);a()})();
+             */this.c=a,this.x=b,this.y=c,this.dx=d,this.dy=e,this.radius=f}draw(){this.c.save(),this.c.beginPath(),this.c.arc(this.x,this.y,this.radius,0,c),this.c.strokeStyle="blue",this.c.stroke(),this.c.restore()}update(){this.checkBounds(),this.x+=this.dx,this.y+=this.dy}checkBounds(){(this.x+this.dx+this.radius>=f||0>this.x+this.dx-this.radius)&&(this.dx=-this.dx),(this.y+this.dy+this.radius>=g||0>this.y+this.dy-this.radius)&&(this.dy=-this.dy)}}(e,50,200,2,2,30);b()})();
+//# sourceMappingURL=bundle.js.map
