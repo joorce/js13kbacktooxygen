@@ -1,6 +1,7 @@
 import {
     Entity
 } from "./Entity"
+import { Ship } from "./Ship";
 import {
     setCanvasResolution
 } from "./utils"
@@ -22,6 +23,8 @@ window.addEventListener("resize", e => {
 })
 
 let circle = new Entity(config, 50, 200, 2, 2, 30)
+let ship = new Ship(config, 50, 200, 2, 2, 30)
+
 
 function gameloop() { // animate
     requestAnimationFrame(gameloop)
@@ -29,6 +32,10 @@ function gameloop() { // animate
 
     circle.update()
     circle.draw()
+
+    ship.update()
+    ship.draw()
+
     // Debug
     ctx.save()
     ctx.lineWidth = 1
