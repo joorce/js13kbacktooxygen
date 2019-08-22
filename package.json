@@ -12,7 +12,9 @@
   },
   "author": "Jose Ortega",
   "license": "ISC",
-  "dependencies": {},
+  "dependencies": {
+    "kontra": "^6.3.0"
+  },
   "devDependencies": {
     "rollup": "^1.19.4",
     "rollup-plugin-babel-minify": "^9.0.0"

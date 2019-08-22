@@ -3,7 +3,7 @@
  * @param {number} nativeWidth The native with of the device
  * @param {number} nativeHeight The native height of the device
  */
-export function setCanvasResolution(canvas, nativeWidth, nativeHeight) {
+export function __setCanvasResolution(canvas, nativeWidth, nativeHeight) {
     let ctx = canvas.getContext("2d")
     let deviceWidth = window.innerWidth
     let deviceHeight = window.innerHeight
