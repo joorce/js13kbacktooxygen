@@ -6,9 +6,9 @@ export default {
         file: 'bundle.js',
         format: 'iife'
     },
-    // plugins: [
-    //     minify({
-    //         comments: false
-    //     })
-    // ]
+    plugins: [
+        minify({
+            comments: false
+        })
+    ]
 };

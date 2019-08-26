@@ -8,7 +8,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rollup -c -w --sourcemap"
+    "build": "rollup -c -w --sourcemap",
+    "release": "npx pngquant -f --ext .png -- text_spritesheet.png spritesheet.png && npx 7z a ..\\release\\release.zip index.html bundle.js spritesheet.png text_spritesheet.png"
   },
   "author": "Jose Ortega",
   "license": "ISC",
@@ -16,6 +17,16 @@
     "kontra": "^6.3.0"
   },
   "devDependencies": {
+    "eslint": "^6.2.2",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-config-prettier": "^6.1.0",
+    "eslint-config-standard": "^14.0.1",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-node": "^9.1.0",
+    "eslint-plugin-prettier": "^3.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "prettier": "^1.18.2",
     "rollup": "^1.19.4",
     "rollup-plugin-babel-minify": "^9.0.0"
   }

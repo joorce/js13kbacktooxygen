@@ -1,3 +1,4 @@
 {
-    "liveServer.settings.multiRootWorkspaceName": "src"
+    "liveServer.settings.multiRootWorkspaceName": "src",
+    "javascript.validate.enable": false
 }
