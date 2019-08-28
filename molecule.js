@@ -4,7 +4,7 @@ import {
 } from "./utils";
 
 import {
-    makeSprite
+    Sprite
 } from "./sprite";
 
 function makeMolecule(sprite, dx, dy, type, radius) {
@@ -115,7 +115,7 @@ export function drawMolecules(molecules) {
 
 export function makeMolecules(state, numOfMolecules) {
     for (let i = 0; i < numOfMolecules; i++) {
-        const sprite = makeSprite(state, Math.random() * state.nativeWidth, Math.random() * state.nativeHeight, "spritesheet.png")
+        const sprite = Sprite(state, Math.random() * state.nativeWidth, Math.random() * state.nativeHeight, "spritesheet.png")
 
         state.molecules.push(
             makeMolecule(

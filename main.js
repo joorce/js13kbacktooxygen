@@ -1,3 +1,40 @@
+/* eslint-disable no-sparse-arrays */
+
+import {
+    zzfx
+} from "./ZzFX.micro"
+
+import {
+    sonantx
+} from "sonantx";
+
+function impulseSound() {
+    zzfx(1, .1, 20, 1, .07, .9, 4.7, .3, .69);
+}
+
+function fireSound() {
+    zzfx(1, .1, 1495, .2, .25, .1, .1, 9.7, .98);
+}
+
+let generateMusicInterval;
+let musicPlayer
+var wave
+var audio
+
+
+let btn = document.getElementById("testbtn")
+btn.addEventListener("click", () => {
+    // zzfx(1, .1, 20, 1, .07, .9, 4.7, .3, .69); // ZzFX 2
+    // zzfx(1, .1, 150, .7, .35, .6, 0, 5.8, .45); // ZzFX 19
+    // zzfx(1, .1, 41, 1, .61, .6, .1, 11, .94); // ZzFX 20
+    // zzfx(1, .1, 885, .2, .1, 5.1, 1.1, 0, .7); // ZzFX 32
+    // zzfx(1, .1, 0, .6, .45, .9, .1, 0, .87); // ZzFX 47
+    // zzfx(1, .1, 1495, .2, .25, .1, .1, 9.7, .98); // ZzFX 60 (Fire)
+
+
+
+})
+
 import {
     degreesToRadians,
     logger,
@@ -7,12 +44,9 @@ import {
     distance
 } from "./utils"
 
-import {
-    jsfxr
-} from "./jsfxr";
 
 import {
-    makeSprite
+    Sprite as Sprite
 } from "./sprite"
 
 import {
@@ -39,19 +73,12 @@ const oxygenGoal = 5
 let gamepads
 let gamepadIsConnected = false
 
-var soundURL = jsfxr([0, , 0.1812, , 0.1349, 0.4524, , 0.2365, , , , , , 0.0819, , , , , 1, , , , , 0.5]);
-var audioPlayer = new Audio();
-audioPlayer.src = soundURL;
-audioPlayer.play();
 
 // conf
 const state = {
     ...setCanvasResolution(canvas, 640, 360),
     molecules: [],
     bullets: [],
-    sfx: {
-        fire: "0,,0.1763,0.1127,0.3663,0.6359,0.2,-0.2168,,,,,,0.4917,-0.5835,,,,1,,,0.103,,0.5"
-    }
     // impulse,
     // maxImpulse
 }
@@ -72,7 +99,7 @@ window.addEventListener("gamepadconnected", e => {
     gamepadIsConnected = true
 })
 
-const sprite = makeSprite(
+const sprite = Sprite(
     state,
     state.nativeWidth / 2,
     state.nativeHeight / 2,
@@ -88,11 +115,6 @@ function setControls(player) {
     const KEY_DOWN = 40
     const KEY_SPACE = 32
 
-    let sfxPlayer = new Audio();
-    sfxPlayer.src = sprite.conf.sfx.fire;
-
-
-
     window.addEventListener("keydown", e => {
         const keyCode = e.keyCode
         switch (keyCode) {
@@ -103,13 +125,14 @@ function setControls(player) {
                 player.turnLeft = true
                 break
             case KEY_SPACE:
+                fireSound()
                 fire(state.bullets, player)
-                arcadeAudio.play('laser');
                 break
             default:
                 break
         }
         if (keyCode == KEY_UP) {
+            impulseSound()
             forward = true
         }
         if (keyCode == KEY_DOWN) {
@@ -149,8 +172,8 @@ function setControls(player) {
 }
 
 function fire(bullets, player) {
-    console.log(bullets)
-    const sprite = makeSprite(
+    // console.log(bullets)
+    const sprite = Sprite(
         state,
         player.x + 5,
         player.y + 6,
@@ -376,13 +399,13 @@ function drawPlayer(player) {
 }
 
 const oxygenBar = makeOxygenBar(
-    makeSprite(state, 16, 8, "spritesheet.png"),
+    Sprite(state, 16, 8, "spritesheet.png"),
     oxygenGoal,
     oxygenCurrent
 )
 
 const impulseBar = makeImpulseBar(
-    makeSprite(state, 525, 8, "spritesheet.png"),
+    Sprite(state, 525, 8, "spritesheet.png"),
     impulse,
     maxImpulse
 )

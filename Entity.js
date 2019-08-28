@@ -1,6 +1,8 @@
-import {
-    FULL_CIRCLE
-} from "./utils";
+const FULL_CIRCLE = 180 * Math.PI
+
+export function add(a, b) {
+    return a + b
+}
 
 export class Entity { // Circle
 

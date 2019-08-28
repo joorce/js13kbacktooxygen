@@ -6,7 +6,7 @@
  * @param {string} filename The image filename.
  * @returns {Sprite} A Sprite object
  */
-export function makeSprite(conf, x, y, filename) {
+export function Sprite(conf, x, y, filename) {
     let img = new Image()
     img.src = `${filename}`
     let rotation = 0
