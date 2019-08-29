@@ -1,4 +1,5 @@
 {
     "liveServer.settings.multiRootWorkspaceName": "src",
-    "javascript.validate.enable": false
+    "javascript.validate.enable": false,
+    "javascript.implicitProjectConfig.checkJs": true
 }

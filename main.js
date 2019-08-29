@@ -1,38 +1,17 @@
 /* eslint-disable no-sparse-arrays */
 
 import {
-    zzfx
-} from "./ZzFX.micro"
+    playMainSong,
+    loadMainSong,
+    mainSongisLoaded
+} from "./sound";
 
-import {
-    sonantx
-} from "sonantx";
 
-function impulseSound() {
-    zzfx(1, .1, 20, 1, .07, .9, 4.7, .3, .69);
-}
-
-function fireSound() {
-    zzfx(1, .1, 1495, .2, .25, .1, .1, 9.7, .98);
-}
-
-let generateMusicInterval;
-let musicPlayer
-var wave
-var audio
 
 
 let btn = document.getElementById("testbtn")
 btn.addEventListener("click", () => {
-    // zzfx(1, .1, 20, 1, .07, .9, 4.7, .3, .69); // ZzFX 2
-    // zzfx(1, .1, 150, .7, .35, .6, 0, 5.8, .45); // ZzFX 19
-    // zzfx(1, .1, 41, 1, .61, .6, .1, 11, .94); // ZzFX 20
-    // zzfx(1, .1, 885, .2, .1, 5.1, 1.1, 0, .7); // ZzFX 32
-    // zzfx(1, .1, 0, .6, .45, .9, .1, 0, .87); // ZzFX 47
-    // zzfx(1, .1, 1495, .2, .25, .1, .1, 9.7, .98); // ZzFX 60 (Fire)
-
-
-
+    loadMainSong()
 })
 
 import {
@@ -54,6 +33,10 @@ import {
     updateMolecules,
     drawMolecules
 } from "./molecule";
+import {
+    log
+} from "util";
+
 
 const canvas = document.getElementsByTagName("canvas")[0]
 const ctx = canvas.getContext("2d")
@@ -72,6 +55,7 @@ const oxygenGoal = 5
 // const bullets = []
 let gamepads
 let gamepadIsConnected = false
+
 
 
 // conf
@@ -125,14 +109,14 @@ function setControls(player) {
                 player.turnLeft = true
                 break
             case KEY_SPACE:
-                fireSound()
+                // fireSound()
                 fire(state.bullets, player)
                 break
             default:
                 break
         }
         if (keyCode == KEY_UP) {
-            impulseSound()
+            // impulseSound()
             forward = true
         }
         if (keyCode == KEY_DOWN) {
@@ -172,17 +156,21 @@ function setControls(player) {
 }
 
 function fire(bullets, player) {
-    // console.log(bullets)
-    const sprite = Sprite(
-        state,
-        player.x + 5,
-        player.y + 6,
-        "spritesheet.png"
-    )
-    const bullet = makeBullet(sprite, 2, 2, player.rotation)
-    // bullet.x = player.x + 5
-    // bullet.y = player.y + 6
-    bullets.push(bullet)
+    if (shootDelay <= 0) {
+        // console.log(bullets)
+        const sprite = Sprite(
+            state,
+            player.x + 5,
+            player.y + 6,
+            "spritesheet.png"
+        )
+        const bullet = makeBullet(sprite, 2, 2, player.rotation)
+        // bullet.x = player.x + 5
+        // bullet.y = player.y + 6
+        bullets.push(bullet)
+        shootDelay = 200
+    }
+
 }
 
 function makeBullet(sprite, dx, dy, rotation) {
@@ -262,9 +250,17 @@ function updateBullet(bullet) {
 }
 
 function updateBullets(bullets) {
-    bullets.forEach(bullet => {
+
+    let _bullets = bullets.filter((bullet) => bullet.alive)
+    for (let i = 0; i < _bullets.length; i++) {
+        const bullet = _bullets[i];
         updateBullet(bullet)
-    })
+    }
+    bullets = _bullets
+
+    // .forEach(bullet => {
+    //     updateBullet(bullet)
+    // })
 }
 
 function makeImpulseBar(sprite, impulse, maxImpulse) {
@@ -423,11 +419,15 @@ makeMolecules(state, 5)
 
 
 
+let shootDelay = 200
 
 function gameloop() {
     // animate
     requestAnimationFrame(gameloop)
     ctx.clearRect(0, -0, state.nativeWidth, state.nativeHeight)
+
+    shootDelay -= 15
+    // console.log(shootDelay)
 
     currentTime = new Date().getTime()
     if (currentTime - lastTime >= 1000) {
@@ -472,36 +472,43 @@ function gameloop() {
         }
     }
 
-    updatePlayer(player)
-    drawPlayer(player)
+    if (true /* mainSongisLoaded */ ) {
+        // playMainSong()
 
-    updateBullets(state.bullets)
-    drawBullets(state.bullets)
+        updatePlayer(player)
+        drawPlayer(player)
+
+        updateBullets(state.bullets)
+        drawBullets(state.bullets)
 
 
-    updateMolecules(state.molecules)
-    drawMolecules(state.molecules)
-    // updateMolecule(molecule)
-    // drawMolecule(molecule)
+        updateMolecules(state.molecules)
+        drawMolecules(state.molecules)
+        // updateMolecule(molecule)
+        // drawMolecule(molecule)
 
-    // Draw UI
-    drawText(state.canvas, millisToMinutesAndSeconds(timeToFinish), state.nativeWidth / 2 - 16 * 3, 8, 1)
 
-    drawOxygenBar(oxygenBar)
-    drawImpulseBar(impulseBar)
 
-    if (forward) {
-        impulse += 0.02
-        // impulse *= 0.98
-        if (impulse >= maxImpulse) {
-            impulse = maxImpulse
+        // Draw UI
+        drawText(state.canvas, millisToMinutesAndSeconds(timeToFinish), state.nativeWidth / 2 - 16 * 3, 8, 1)
+
+        drawOxygenBar(oxygenBar)
+        drawImpulseBar(impulseBar)
+
+        if (forward) {
+            impulse += 0.02
+            // impulse *= 0.98
+            if (impulse >= maxImpulse) {
+                impulse = maxImpulse
+            }
         }
-    }
-    if (brake) {
-        impulse *= 0.98
-        if (impulse <= 0) {
-            impulse = 0
+        if (brake) {
+            impulse *= 0.98
+            if (impulse <= 0) {
+                impulse = 0
+            }
         }
+
     }
     // Debug
     ctx.save()
