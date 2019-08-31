@@ -46,12 +46,11 @@ export function drawBullets(bullets) {
 
 export function updateBullet(bullet) {
     if (!bullet.alive) {
-        bullet = null
         return
     }
     // console.log(bullet)
     bullet.x +=
-        Math.cos(degreesToRadians(bullet.rotation)) * (bullet.dx * bullet.state.maxImpulse + 1) 
+        Math.cos(degreesToRadians(bullet.rotation)) * (bullet.dx * bullet.state.maxImpulse + 1)
     bullet.y +=
         Math.sin(degreesToRadians(bullet.rotation)) * (bullet.dy * bullet.state.maxImpulse + 1)
 
@@ -68,6 +67,7 @@ export function updateBullet(bullet) {
     if (bullet.y >= bullet.state.nativeHeight - 8) {
         bullet.y = bullet.state.nativeHeight - 8
         bullet.alive = false
+
     }
 
     if (bullet.y <= 0) {
@@ -77,7 +77,6 @@ export function updateBullet(bullet) {
 }
 
 export function updateBullets(bullets) {
-
     let _bullets = bullets.filter((bullet) => bullet.alive)
     for (let i = 0; i < _bullets.length; i++) {
         const bullet = _bullets[i];
@@ -85,7 +84,5 @@ export function updateBullets(bullets) {
     }
     bullets = _bullets
 
-    // .forEach(bullet => {
-    //     updateBullet(bullet)
-    // })
+
 }

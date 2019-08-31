@@ -9,6 +9,8 @@ import { loadMainSong } from "./sound/sound";
 import { Sprite } from "./entities/sprite";
 import { drawText, logger, millisToMinutesAndSeconds, setCanvasResolution } from "./lib/utils";
 
+
+
 let btn = document.getElementById("testbtn")
 btn.addEventListener("click", () => {
     loadMainSong()
@@ -16,6 +18,7 @@ btn.addEventListener("click", () => {
 
 const canvas = document.getElementsByTagName("canvas")[0]
 const ctx = canvas.getContext("2d")
+
 
 let forward = false
 let brake = false
@@ -26,6 +29,7 @@ const limitTime = 60000
 let timeToFinish = 60000
 let gamepads
 let gamepadIsConnected = false
+let isGameFinish = false
 
 // shared state
 const state = {
@@ -142,6 +146,8 @@ setControls(player)
 
 makeMolecules(state, 5)
 
+state.oxygenGoal = state.molecules.length * 2
+
 export function fire(bullets, player) {
     if (player.state.shootDelay <= 0) {
         const sprite = Sprite(
@@ -157,6 +163,7 @@ export function fire(bullets, player) {
 
 function gameloop() {
     // animate
+    if (isGameFinish) return
     requestAnimationFrame(gameloop)
     ctx.clearRect(0, -0, state.nativeWidth, state.nativeHeight)
 
@@ -238,6 +245,12 @@ function gameloop() {
             }
         }
 
+    }
+    if (state.oxygenCurrent >= state.oxygenGoal) {
+        isGameFinish = true
+    }
+    if (isGameFinish) {
+        drawText(state.canvas, "you win!", state.nativeWidth / 2 - 16 * 3, state.nativeHeight / 2, 1)
     }
     // Debug
     ctx.save()

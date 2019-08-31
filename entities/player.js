@@ -1,4 +1,4 @@
-import { degreesToRadians, distance } from "../lib/utils";
+import { degreesToRadians, distance, MoleculeType } from "../lib/utils";
 
 export function Player(sprite, dx, dy, turnLeft = false, turnRight = false) {
     return {
@@ -17,8 +17,23 @@ export function updatePlayer(player) {
     }
 
     player.state.molecules.forEach(molecule => {
-        if (distance(player, molecule) <= 16) {
-            player.alive = false
+        if (molecule.alive) {
+            if (molecule.type == MoleculeType.METHANE && distance(player, molecule) <= molecule.radius * 1.5) {
+                player.alive = false
+            }
+            if (molecule.type == MoleculeType.DIOXIDE && distance(player, molecule) <= molecule.radius * 1.8) {
+                player.alive = false
+            }
+            if (molecule.type == MoleculeType.CARBON && distance(player, molecule) <= molecule.radius) {
+                player.alive = false
+            }
+            if (molecule.type == MoleculeType.HYDROGEN && distance(player, molecule) <= molecule.radius * 2) {
+                player.alive = false
+            }
+            if (molecule.type == MoleculeType.OXYGEN && distance(player, molecule) <= molecule.radius * 2) {
+                molecule.alive = false
+                player.state.oxygenCurrent++
+            }
         }
     })
 
@@ -59,6 +74,7 @@ export function drawPlayer(player) {
     const ctx = player.state.canvas.getContext("2d")
     ctx.save()
     ctx.imageSmoothingEnabled = false
+
 
     const {
         x,

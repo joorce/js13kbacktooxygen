@@ -68,12 +68,12 @@ function getnotefreq(n) {
 }
 
 function genBuffer(waveSize, callBack) {
-    setTimeout(function () {
+    setTimeout(function() {
         // Create the channel work buffer
         var buf = new Uint8Array(waveSize * WAVE_CHAN * 2);
         var b = buf.length - 2;
 
-        var iterate = function () {
+        var iterate = function() {
             var begin = new Date();
             var count = 0;
             while (b >= 0) {
@@ -86,7 +86,7 @@ function genBuffer(waveSize, callBack) {
                     return;
                 }
             }
-            setTimeout(function () {
+            setTimeout(function() {
                 callBack(buf);
             }, 0);
         };
@@ -99,7 +99,7 @@ function applyDelay(chnBuf, waveSamples, instr, rowLen, callBack) {
     var t1 = instr.fx_delay_amt / 255;
 
     var n1 = 0;
-    var iterate = function () {
+    var iterate = function() {
         var beginning = new Date();
         var count = 0;
         while (n1 < waveSamples - p1) {
@@ -129,7 +129,7 @@ function applyDelay(chnBuf, waveSamples, instr, rowLen, callBack) {
     setTimeout(iterate, 0);
 }
 
-var AudioGenerator = function (mixBuf) {
+var AudioGenerator = function(mixBuf) {
     this.mixBuf = mixBuf;
     this.waveSize = mixBuf.length / WAVE_CHAN / 2;
 };
@@ -138,7 +138,7 @@ export {
     AudioGenerator
 };
 
-AudioGenerator.prototype.getWave = function () {
+AudioGenerator.prototype.getWave = function() {
     var mixBuf = this.mixBuf;
     var waveSize = this.waveSize;
     // Local variables
@@ -171,14 +171,14 @@ AudioGenerator.prototype.getWave = function () {
     }
     return wave;
 };
-AudioGenerator.prototype.getAudio = function () {
+AudioGenerator.prototype.getAudio = function() {
     var wave = this.getWave();
     var a = new Audio("data:audio/wav;base64," + btoa(wave));
     a.preload = "none";
     a.load();
     return a;
 };
-AudioGenerator.prototype.getAudioBuffer = function (callBack) {
+AudioGenerator.prototype.getAudioBuffer = function(callBack) {
     if (audioCtx === null)
         audioCtx = new AudioContext();
     var mixBuf = this.mixBuf;
@@ -188,7 +188,7 @@ AudioGenerator.prototype.getAudioBuffer = function (callBack) {
     var lchan = buffer.getChannelData(0);
     var rchan = buffer.getChannelData(1);
     var b = 0;
-    var iterate = function () {
+    var iterate = function() {
         var beginning = new Date();
         var count = 0;
         while (b < waveSize) {
@@ -205,14 +205,14 @@ AudioGenerator.prototype.getAudioBuffer = function (callBack) {
                 return;
             }
         }
-        setTimeout(function () {
+        setTimeout(function() {
             callBack(buffer);
         }, 0);
     };
     setTimeout(iterate, 0);
 };
 
-var SoundGenerator = function (instr, rowLen) {
+var SoundGenerator = function(instr, rowLen) {
     this.instr = instr;
     this.rowLen = rowLen || 5605;
 
@@ -230,7 +230,7 @@ export {
     SoundGenerator
 };
 
-SoundGenerator.prototype.genSound = function (n, chnBuf, currentpos) {
+SoundGenerator.prototype.genSound = function(n, chnBuf, currentpos) {
     var marker = new Date();
     var c1 = 0;
     var c2 = 0;
@@ -313,28 +313,28 @@ SoundGenerator.prototype.genSound = function (n, chnBuf, currentpos) {
         }
     }
 };
-SoundGenerator.prototype.getAudioGenerator = function (n, callBack) {
+SoundGenerator.prototype.getAudioGenerator = function(n, callBack) {
     var bufferSize = (this.attack + this.sustain + this.release - 1) + (32 * this.rowLen);
     var self = this;
-    genBuffer(bufferSize, function (buffer) {
+    genBuffer(bufferSize, function(buffer) {
         self.genSound(n, buffer, 0);
-        applyDelay(buffer, bufferSize, self.instr, self.rowLen, function () {
+        applyDelay(buffer, bufferSize, self.instr, self.rowLen, function() {
             callBack(new AudioGenerator(buffer));
         });
     });
 };
-SoundGenerator.prototype.createAudio = function (n, callBack) {
-    this.getAudioGenerator(n, function (ag) {
+SoundGenerator.prototype.createAudio = function(n, callBack) {
+    this.getAudioGenerator(n, function(ag) {
         callBack(ag.getAudio());
     });
 };
-SoundGenerator.prototype.createAudioBuffer = function (n, callBack) {
-    this.getAudioGenerator(n, function (ag) {
+SoundGenerator.prototype.createAudioBuffer = function(n, callBack) {
+    this.getAudioGenerator(n, function(ag) {
         ag.getAudioBuffer(callBack);
     });
 };
 
-var MusicGenerator = function (song) {
+var MusicGenerator = function(song) {
     this.song = song;
     // Wave data configuration
     this.waveSize = WAVE_SPS * song.songLen; // Total song size (in samples)
@@ -344,9 +344,9 @@ export {
     MusicGenerator
 };
 
-MusicGenerator.prototype.generateTrack = function (instr, mixBuf, callBack) {
+MusicGenerator.prototype.generateTrack = function(instr, mixBuf, callBack) {
     var self = this;
-    genBuffer(this.waveSize, function (chnBuf) {
+    genBuffer(this.waveSize, function(chnBuf) {
         // Preload/precalc some properties/expressions (for improved performance)
         var waveSamples = self.waveSize,
             waveBytes = self.waveSize * WAVE_CHAN * 2,
@@ -357,7 +357,7 @@ MusicGenerator.prototype.generateTrack = function (instr, mixBuf, callBack) {
         var currentpos = 0;
         var p = 0;
         var row = 0;
-        var recordSounds = function () {
+        var recordSounds = function() {
             var beginning = new Date();
             while (true) {
                 if (row === 32) {
@@ -385,12 +385,12 @@ MusicGenerator.prototype.generateTrack = function (instr, mixBuf, callBack) {
             }
         };
 
-        var delay = function () {
+        var delay = function() {
             applyDelay(chnBuf, waveSamples, instr, rowLen, finalize);
         };
 
         var b2 = 0;
-        var finalize = function () {
+        var finalize = function() {
             var beginning = new Date();
             var count = 0;
             // Add to mix buffer
@@ -410,11 +410,11 @@ MusicGenerator.prototype.generateTrack = function (instr, mixBuf, callBack) {
         setTimeout(recordSounds, 0);
     });
 };
-MusicGenerator.prototype.getAudioGenerator = function (callBack) {
+MusicGenerator.prototype.getAudioGenerator = function(callBack) {
     var self = this;
-    genBuffer(this.waveSize, function (mixBuf) {
+    genBuffer(this.waveSize, function(mixBuf) {
         var t = 0;
-        var recu = function () {
+        var recu = function() {
             if (t < self.song.songData.length) {
                 t += 1;
                 self.generateTrack(self.song.songData[t - 1], mixBuf, recu);
@@ -425,13 +425,13 @@ MusicGenerator.prototype.getAudioGenerator = function (callBack) {
         recu();
     });
 };
-MusicGenerator.prototype.createAudio = function (callBack) {
-    this.getAudioGenerator(function (ag) {
-        callBack(ag.getAudio());
-    });
-};
-MusicGenerator.prototype.createAudioBuffer = function (callBack) {
-    this.getAudioGenerator(function (ag) {
+// MusicGenerator.prototype.createAudio = function (callBack) {
+//     this.getAudioGenerator(function (ag) {
+//         callBack(ag.getAudio());
+//     });
+// };
+MusicGenerator.prototype.createAudioBuffer = function(callBack) {
+    this.getAudioGenerator(function(ag) {
         ag.getAudioBuffer(callBack);
     });
 };
