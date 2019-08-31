@@ -1,30 +1,28 @@
 {
-  "name": "js13k-backtooxygen",
-  "version": "1.0.0",
-  "description": "Convert all polution molecules back to oxygen",
-  "main": "main.js",
-  "directories": {
-    "lib": "lib"
-  },
-  "sideEffects": false,
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "npx webpack --config webpack.config.js -w --mode development",
-    "build": "npx webpack --config webpack.config.js --mode production",
-    "release": "npx pngquant -f --ext .png -- text_spritesheet.png spritesheet.png && npx 7z a ..\\release\\release.zip index.html bundle.js spritesheet.png text_spritesheet.png"
-  },
-  "author": "Jose Ortega",
-  "license": "ISC",
-  "dependencies": {
-    "sonantx": "^1.0.3"
-  },
-  "devDependencies": {
-    "eslint": "^6.2.2",
-    "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-node": "^9.1.0",
-    "eslint-plugin-promise": "^4.2.1",
-    "webpack": "^4.39.2",
-    "webpack-cli": "^3.3.7"
-  }
+    "name": "js13k-backtooxygen",
+    "version": "1.0.0",
+    "description": "Convert all polution molecules back to oxygen",
+    "main": "main.js",
+    "directories": {
+        "lib": "lib"
+    },
+    "sideEffects": false,
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "watch": "npx webpack --config webpack.config.js -w --mode development",
+        "build": "npx webpack --config webpack.config.js --mode production",
+        "release": "npx pngquant -f --ext .png -- assets/text_spritesheet.png assets/spritesheet.png && npx 7z a ..\\release\\release.zip index.html bundle.js assets/spritesheet.png assets/text_spritesheet.png"
+    },
+    "author": "Jose Ortega",
+    "license": "ISC",
+    "dependencies": {},
+    "devDependencies": {
+        "eslint": "^6.2.2",
+        "eslint-config-airbnb-base": "^14.0.0",
+        "eslint-plugin-import": "^2.18.2",
+        "eslint-plugin-node": "^9.1.0",
+        "eslint-plugin-promise": "^4.2.1",
+        "webpack": "^4.39.2",
+        "webpack-cli": "^3.3.7"
+    }
 }

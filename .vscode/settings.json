@@ -1,5 +1,15 @@
 {
-    "liveServer.settings.multiRootWorkspaceName": "src",
-    "javascript.validate.enable": false,
-    "javascript.implicitProjectConfig.checkJs": true
+  "liveServer.settings.multiRootWorkspaceName": "src",
+  "javascript.validate.enable": false,
+  "javascript.implicitProjectConfig.checkJs": true,
+  "beautify.config": {
+    "brace_style": "collapse,preserve-inline"
+  },
+  "files.exclude": {
+    "webpack.config.js": true,
+    "bundle.js": true,
+    "bundle.js.map": true,
+    ".eslintrc.js": true,
+    ".gitignore": true
+  }
 }

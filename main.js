@@ -1,47 +1,22 @@
 /* eslint-disable no-sparse-arrays */
 
-import {
-    playMainSong,
-    loadMainSong,
-    mainSongisLoaded
-} from "./sound";
-
-
-
+import { Bullet, drawBullets, updateBullets } from "./entities/bullet";
+import { drawImpulseBar, ImpulseBar } from "./ui/impulsebar";
+import { drawMolecules, makeMolecules, updateMolecules } from "./entities/molecule";
+import { drawOxygenBar, OxygenBar } from "./ui/oxygenbar";
+import { drawPlayer, Player, updatePlayer } from "./entities/player";
+import { loadMainSong } from "./sound/sound";
+import { Sprite } from "./entities/sprite";
+import { drawText, logger, millisToMinutesAndSeconds, setCanvasResolution } from "./lib/utils";
 
 let btn = document.getElementById("testbtn")
 btn.addEventListener("click", () => {
     loadMainSong()
 })
 
-import {
-    degreesToRadians,
-    logger,
-    drawText,
-    millisToMinutesAndSeconds,
-    setCanvasResolution,
-    distance
-} from "./utils"
-
-
-import {
-    Sprite as Sprite
-} from "./sprite"
-
-import {
-    makeMolecules,
-    updateMolecules,
-    drawMolecules
-} from "./molecule";
-import {
-    log
-} from "util";
-
-
 const canvas = document.getElementsByTagName("canvas")[0]
 const ctx = canvas.getContext("2d")
-let impulse = 0
-const maxImpulse = 2
+
 let forward = false
 let brake = false
 let currentTime
@@ -49,22 +24,19 @@ let lastTime = new Date().getTime()
 const startTime = lastTime
 const limitTime = 60000
 let timeToFinish = 60000
-// eslint-disable-next-line prefer-const
-let oxygenCurrent = 2
-const oxygenGoal = 5
-// const bullets = []
 let gamepads
 let gamepadIsConnected = false
 
-
-
-// conf
+// shared state
 const state = {
     ...setCanvasResolution(canvas, 640, 360),
     molecules: [],
     bullets: [],
-    // impulse,
-    // maxImpulse
+    impulse: 0,
+    maxImpulse: 2,
+    oxygenCurrent: 0,
+    oxygenGoal: 5,
+    shootDelay: 200,
 }
 
 setCanvasResolution(canvas, state.nativeWidth, state.nativeHeight)
@@ -86,11 +58,10 @@ window.addEventListener("gamepadconnected", e => {
 const sprite = Sprite(
     state,
     state.nativeWidth / 2,
-    state.nativeHeight / 2,
-    "spritesheet.png"
+    state.nativeHeight / 2
 )
 
-const player = makePlayer(sprite, 2, 2)
+const player = Player(sprite, 2, 2)
 
 function setControls(player) {
     const KEY_LEFT = 37
@@ -155,278 +126,41 @@ function setControls(player) {
     })
 }
 
-function fire(bullets, player) {
-    if (shootDelay <= 0) {
-        // console.log(bullets)
-        const sprite = Sprite(
-            state,
-            player.x + 5,
-            player.y + 6,
-            "spritesheet.png"
-        )
-        const bullet = makeBullet(sprite, 2, 2, player.rotation)
-        // bullet.x = player.x + 5
-        // bullet.y = player.y + 6
-        bullets.push(bullet)
-        shootDelay = 200
-    }
-
-}
-
-function makeBullet(sprite, dx, dy, rotation) {
-    const alive = true
-    return {
-        ...sprite,
-        rotation,
-        dx,
-        dy,
-        alive
-    }
-}
-
-function drawBullet(bullet) {
-    if (!bullet.alive) {
-        return
-    }
-    const ctx = bullet.conf.canvas.getContext("2d")
-    ctx.save()
-    ctx.imageSmoothingEnabled = false
-
-    const {
-        x,
-        y,
-        rotation
-    } = bullet
-
-    const width = 3
-    const height = 1
-    const centerX = x + 0.5 * width // x of shape center
-    const centerY = y + 0.5 * height // y of shape center
-
-    ctx.save()
-    ctx.translate(centerX, centerY)
-    ctx.rotate((Math.PI / 180) * rotation)
-    ctx.translate(-centerX, -centerY)
-    ctx.drawImage(bullet.img, 24, 0, 1, 16, x, y, 8, 3)
-    ctx.restore()
-}
-
-function drawBullets(bullets) {
-    bullets.forEach(bullet => {
-        drawBullet(bullet)
-    })
-}
-
-function updateBullet(bullet) {
-    if (!bullet.alive) {
-        bullet = null
-        return
-    }
-    // console.log(bullet)
-    bullet.x +=
-        Math.cos(degreesToRadians(bullet.rotation)) * (bullet.dx * maxImpulse + 1)
-    bullet.y +=
-        Math.sin(degreesToRadians(bullet.rotation)) * (bullet.dy * maxImpulse + 1)
-
-    if (bullet.x >= state.nativeWidth - 8) {
-        bullet.x = state.nativeWidth - 8
-        bullet.alive = false
-    }
-
-    if (bullet.x <= 0) {
-        bullet.x = 0
-        bullet.alive = false
-    }
-
-    if (bullet.y >= state.nativeHeight - 8) {
-        bullet.y = state.nativeHeight - 8
-        bullet.alive = false
-    }
-
-    if (bullet.y <= 0) {
-        bullet.y = 0
-        bullet.alive = false
-    }
-}
-
-function updateBullets(bullets) {
-
-    let _bullets = bullets.filter((bullet) => bullet.alive)
-    for (let i = 0; i < _bullets.length; i++) {
-        const bullet = _bullets[i];
-        updateBullet(bullet)
-    }
-    bullets = _bullets
-
-    // .forEach(bullet => {
-    //     updateBullet(bullet)
-    // })
-}
-
-function makeImpulseBar(sprite, impulse, maxImpulse) {
-    return {
-        ...sprite,
-        impulse,
-        maxImpulse
-    }
-}
-
-function drawImpulseBar(impulseBar) {
-    const ctx = impulseBar.conf.canvas.getContext("2d")
-    ctx.save()
-    ctx.imageSmoothingEnabled = false
-
-    const {
-        x,
-        y
-    } = impulseBar
-
-    ctx.save()
-    ctx.drawImage(impulseBar.img, 24, 0, 1, 16, x, y, 100, 16)
-    ctx.drawImage(impulseBar.img, 54, 0, 1, 16, x, y, (impulse * 100) / maxImpulse, 16)
-    drawText(impulseBar.conf.canvas, "impulse", x + 408, y + 4, 0.5)
-    ctx.restore()
-}
-
-function makeOxygenBar(sprite, current, goal) {
-    return {
-        ...sprite,
-        current,
-        goal
-    }
-}
-
-function drawOxygenBar(oxygenBar) {
-    const ctx = oxygenBar.conf.canvas.getContext("2d")
-    ctx.save()
-    ctx.imageSmoothingEnabled = false
-
-    const {
-        x,
-        y
-    } = oxygenBar
-
-    ctx.save()
-    ctx.drawImage(oxygenBar.img, 24, 0, 1, 16, x, y, 100, 16)
-    ctx.drawImage(oxygenBar.img, 38, 0, 1, 16, x, y, (oxygenCurrent * 100) / oxygenGoal, 16)
-    drawText(oxygenBar.conf.canvas, "oxygen", x + 220, y + 4, 0.5)
-    ctx.restore()
-}
-
-
-
-function makePlayer(sprite, dx, dy, turnLeft = false, turnRight = false) {
-    return {
-        ...sprite,
-        dx,
-        dy,
-        turnLeft,
-        turnRight,
-        alive: true
-    }
-}
-
-function updatePlayer(player) {
-    if (!player.alive) {
-        return
-    }
-
-    player.conf.molecules.forEach(molecule => {
-        if (distance(player, molecule) <= 16) {
-            player.alive = false
-        }
-    })
-
-    if (player.turnRight) {
-        player.rotation =
-            player.rotation < 360 ? (player.rotation += 2) : (player.rotation = 0)
-    } else if (player.turnLeft) {
-        player.rotation =
-            player.rotation > 0 ? (player.rotation -= 2) : (player.rotation = 360)
-    }
-
-    player.x +=
-        Math.cos(degreesToRadians(player.rotation)) * (player.dx * impulse)
-    player.y +=
-        Math.sin(degreesToRadians(player.rotation)) * (player.dy * impulse)
-
-    if (player.x >= state.nativeWidth - 16) {
-        player.x = state.nativeWidth - 16
-    }
-
-    if (player.x <= 0) {
-        player.x = 0
-    }
-
-    if (player.y >= state.nativeHeight - 16) {
-        player.y = state.nativeHeight - 16
-    }
-
-    if (player.y <= 0) {
-        player.y = 0
-    }
-}
-
-function drawPlayer(player) {
-    if (!player.alive) {
-        return
-    }
-    const ctx = player.conf.canvas.getContext("2d")
-    ctx.save()
-    ctx.imageSmoothingEnabled = false
-
-    const {
-        x,
-        y,
-        rotation
-    } = player
-
-    const width = 16
-    const height = 16
-    const centerX = x + 0.5 * width // x of shape center
-    const centerY = y + 0.5 * height // y of shape center
-
-    ctx.save()
-    ctx.translate(centerX, centerY)
-    ctx.rotate((Math.PI / 180) * rotation)
-    ctx.translate(-centerX, -centerY)
-    ctx.drawImage(player.img, 0, 0, 16, 16, x, y, 16, 16)
-    ctx.restore()
-}
-
-const oxygenBar = makeOxygenBar(
-    Sprite(state, 16, 8, "spritesheet.png"),
-    oxygenGoal,
-    oxygenCurrent
+const oxygenBar = OxygenBar(
+    Sprite(state, 16, 8),
+    state.oxygenGoal,
+    state.oxygenCurrent
 )
 
-const impulseBar = makeImpulseBar(
-    Sprite(state, 525, 8, "spritesheet.png"),
-    impulse,
-    maxImpulse
+const impulseBar = ImpulseBar(
+    Sprite(state, 525, 8),
+    state.impulse,
+    state.maxImpulse
 )
 
 setControls(player)
 
-// const molecule = makeMolecule(
-//     makeSprite(state, state.nativeWidth / 2 + 50, state.nativeHeight / 2, "spritesheet.png"),
-//     2, 2,
-//     Math.random() >= 0.5 ? "methane" : "dioxide",
-//     16
-// )
-
 makeMolecules(state, 5)
 
-
-
-let shootDelay = 200
+export function fire(bullets, player) {
+    if (player.state.shootDelay <= 0) {
+        const sprite = Sprite(
+            player.state,
+            player.x + 5,
+            player.y + 6
+        )
+        const bullet = Bullet(sprite, 2, 2, player.rotation)
+        bullets.push(bullet)
+        player.state.shootDelay = 200
+    }
+}
 
 function gameloop() {
     // animate
     requestAnimationFrame(gameloop)
     ctx.clearRect(0, -0, state.nativeWidth, state.nativeHeight)
 
-    shootDelay -= 15
+    state.shootDelay -= 15
     // console.log(shootDelay)
 
     currentTime = new Date().getTime()
@@ -481,13 +215,8 @@ function gameloop() {
         updateBullets(state.bullets)
         drawBullets(state.bullets)
 
-
         updateMolecules(state.molecules)
         drawMolecules(state.molecules)
-        // updateMolecule(molecule)
-        // drawMolecule(molecule)
-
-
 
         // Draw UI
         drawText(state.canvas, millisToMinutesAndSeconds(timeToFinish), state.nativeWidth / 2 - 16 * 3, 8, 1)
@@ -496,16 +225,16 @@ function gameloop() {
         drawImpulseBar(impulseBar)
 
         if (forward) {
-            impulse += 0.02
+            state.impulse += 0.02
             // impulse *= 0.98
-            if (impulse >= maxImpulse) {
-                impulse = maxImpulse
+            if (state.impulse >= state.maxImpulse) {
+                state.impulse = state.maxImpulse
             }
         }
         if (brake) {
-            impulse *= 0.98
-            if (impulse <= 0) {
-                impulse = 0
+            state.impulse *= 0.98
+            if (state.impulse <= 0) {
+                state.impulse = 0
             }
         }
 

@@ -1,13 +1,8 @@
-import {
-    degreesToRadians,
-    distance
-} from "./utils";
+import { Sprite } from "./sprite";
+import { degreesToRadians, distance } from "../lib/utils";
 
-import {
-    Sprite
-} from "./sprite";
 
-function makeMolecule(sprite, dx, dy, type, radius) {
+function Molecule(sprite, dx, dy, type, radius) {
     return {
         ...sprite,
         dx,
@@ -22,7 +17,7 @@ function makeMolecule(sprite, dx, dy, type, radius) {
 
 
 function drawMolecule(molecule) {
-    const ctx = molecule.conf.canvas.getContext("2d")
+    const ctx = molecule.state.canvas.getContext("2d")
     ctx.save()
     ctx.imageSmoothingEnabled = false
 
@@ -65,10 +60,10 @@ function updateMolecule(molecule) {
         return
     }
     const {
-        conf
+        state
     } = molecule
 
-    molecule.conf.bullets.forEach(bullet => {
+    molecule.state.bullets.forEach(bullet => {
         if (distance(molecule, bullet) <= 16) {
             molecule.alive = false
         }
@@ -80,8 +75,8 @@ function updateMolecule(molecule) {
     molecule.x += Math.cos(degreesToRadians(molecule.rotation)) * (molecule.dx * 1)
     molecule.y += Math.sin(degreesToRadians(molecule.rotation)) * (molecule.dy * 1)
 
-    if (molecule.x >= conf.nativeWidth - 32) {
-        molecule.x = conf.nativeWidth - 32
+    if (molecule.x >= state.nativeWidth - 32) {
+        molecule.x = state.nativeWidth - 32
         molecule.dx *= -1
     }
 
@@ -90,8 +85,8 @@ function updateMolecule(molecule) {
         molecule.dx *= -1
     }
 
-    if (molecule.y >= conf.nativeHeight - 32) {
-        molecule.y = conf.nativeHeight - 32
+    if (molecule.y >= state.nativeHeight - 32) {
+        molecule.y = state.nativeHeight - 32
         molecule.dy *= -1
     }
 
@@ -115,10 +110,10 @@ export function drawMolecules(molecules) {
 
 export function makeMolecules(state, numOfMolecules) {
     for (let i = 0; i < numOfMolecules; i++) {
-        const sprite = Sprite(state, Math.random() * state.nativeWidth, Math.random() * state.nativeHeight, "spritesheet.png")
+        const sprite = Sprite(state, Math.random() * state.nativeWidth, Math.random() * state.nativeHeight)
 
         state.molecules.push(
-            makeMolecule(
+            Molecule(
                 sprite,
                 1,
                 1,
