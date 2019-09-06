@@ -129,7 +129,7 @@ function drawBullet(bullet) {
     } = bullet
 
     const width = 3
-    const height = 1
+    const height = 3
     const centerX = x + 0.5 * width // x of shape center
     const centerY = y + 0.5 * height // y of shape center
 
@@ -720,10 +720,10 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-let btn = document.getElementById("testbtn")
-btn.addEventListener("click", () => {
-    Object(_sound_sound__WEBPACK_IMPORTED_MODULE_5__["loadMainSong"])()
-})
+// let btn = document.getElementById("testbtn")
+// btn.addEventListener("click", () => {
+//     loadMainSong()
+// })
 
 const canvas = document.getElementsByTagName("canvas")[0]
 const ctx = canvas.getContext("2d")
@@ -872,9 +872,12 @@ function fire(bullets, player) {
 
 function gameloop() {
     // animate
-    if (isGameFinish) return
+    if (isGameFinish) {
+        Object(_lib_utils__WEBPACK_IMPORTED_MODULE_7__["drawText"])(state.canvas, "you win!", state.nativeWidth / 2 - 16 * 3, state.nativeHeight / 2, 1)
+        return
+    }
     requestAnimationFrame(gameloop)
-    ctx.clearRect(0, -0, state.nativeWidth, state.nativeHeight)
+    ctx.clearRect(-16, -16, state.nativeWidth + 16, state.nativeHeight + 16)
 
     state.shootDelay -= 15
     // console.log(shootDelay)
@@ -957,9 +960,6 @@ function gameloop() {
     }
     if (state.oxygenCurrent >= state.oxygenGoal) {
         isGameFinish = true
-    }
-    if (isGameFinish) {
-        Object(_lib_utils__WEBPACK_IMPORTED_MODULE_7__["drawText"])(state.canvas, "you win!", state.nativeWidth / 2 - 16 * 3, state.nativeHeight / 2, 1)
     }
     // Debug
     ctx.save()

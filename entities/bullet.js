@@ -26,7 +26,7 @@ export function drawBullet(bullet) {
     } = bullet
 
     const width = 3
-    const height = 1
+    const height = 3
     const centerX = x + 0.5 * width // x of shape center
     const centerY = y + 0.5 * height // y of shape center
 

@@ -11,10 +11,10 @@ import { drawText, logger, millisToMinutesAndSeconds, setCanvasResolution } from
 
 
 
-let btn = document.getElementById("testbtn")
-btn.addEventListener("click", () => {
-    loadMainSong()
-})
+// let btn = document.getElementById("testbtn")
+// btn.addEventListener("click", () => {
+//     loadMainSong()
+// })
 
 const canvas = document.getElementsByTagName("canvas")[0]
 const ctx = canvas.getContext("2d")
@@ -163,9 +163,12 @@ export function fire(bullets, player) {
 
 function gameloop() {
     // animate
-    if (isGameFinish) return
+    if (isGameFinish) {
+        drawText(state.canvas, "you win!", state.nativeWidth / 2 - 16 * 3, state.nativeHeight / 2, 1)
+        return
+    }
     requestAnimationFrame(gameloop)
-    ctx.clearRect(0, -0, state.nativeWidth, state.nativeHeight)
+    ctx.clearRect(-16, -16, state.nativeWidth + 16, state.nativeHeight + 16)
 
     state.shootDelay -= 15
     // console.log(shootDelay)
@@ -248,9 +251,6 @@ function gameloop() {
     }
     if (state.oxygenCurrent >= state.oxygenGoal) {
         isGameFinish = true
-    }
-    if (isGameFinish) {
-        drawText(state.canvas, "you win!", state.nativeWidth / 2 - 16 * 3, state.nativeHeight / 2, 1)
     }
     // Debug
     ctx.save()
