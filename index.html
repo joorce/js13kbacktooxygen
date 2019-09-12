@@ -9,7 +9,7 @@
     <style>
         body,
         html {
-            /* background: red; */
+            background: black;
             margin: 0;
             padding: 0;
             overflow: hidden;
@@ -17,21 +17,20 @@
 
         #testbtn {
             z-index: 99;
+            position: absolute;
+            top: 50%;
+            left: calc(50% - 100px);
+            width: 100px;
         }
 
-        canvas {
-            image-rendering: optimizeSpeed;
-            image-rendering: -moz-crisp-edges;
-            image-rendering: -webkit-optimize-contrast;
-            image-rendering: -o-crisp-edges;
-            image-rendering: optimize-contrast;
-            -ms-interpolation-mode: nearest-neighbor;
-        }
+        
     </style>
 </head>
 
 <body>
-    <!-- <button id="testbtn">Test</button> -->
+    <!-- <div id="splash">
+        <button id="testbtn" class="nes-btn">PRESS TO PLAY</button>
+    </div> -->
     <canvas id="gamearea"></canvas>
 </body>
 <script src="bundle.js"></script>

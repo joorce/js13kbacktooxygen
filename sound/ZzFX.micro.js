@@ -1,7 +1,7 @@
 // ZzFXmicro - Zuper Zmall Zound Zynth - MIT License - Copyright 2019 Frank Force
 const zzfx_v = .5;
 const zzfx_x = new AudioContext;
-export const zzfx = (e, f, a, b = 1, d = .1, g = 0, h = 0, k = 0, l = 0) => {
+ const zzfx = (e, f, a, b = 1, d = .1, g = 0, h = 0, k = 0, l = 0) => {
     let S = 44100,
         P = Math.PI;
     a *= 2 * P / S;

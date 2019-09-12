@@ -11,12 +11,27 @@ export function Player(sprite, dx, dy, turnLeft = false, turnRight = false) {
     }
 }
 
+function fillUpto(arr, limit) {
+    if(limit >= 60) return
+    let step = 0
+    while (step < limit) {
+        let row = Math.floor(Math.random() * arr.length)
+        let col = Math.floor(Math.random() * arr[0].length)
+        let cell = arr[row][col]
+        if (cell == 0) {
+            arr[row][col] = 1
+            step++
+        }
+    }
+}
+
 export function updatePlayer(player) {
     if (!player.alive) {
         return
     }
 
     player.state.molecules.forEach(molecule => {
+
         if (molecule.alive) {
             if (molecule.type == MoleculeType.METHANE && distance(player, molecule) <= molecule.radius * 1.5) {
                 player.alive = false
@@ -32,7 +47,9 @@ export function updatePlayer(player) {
             }
             if (molecule.type == MoleculeType.OXYGEN && distance(player, molecule) <= molecule.radius * 2) {
                 molecule.alive = false
-                player.state.oxygenCurrent++
+                if (player.state.oxygenCurrent < player.state.oxygenGoal) {
+                    player.state.oxygenCurrent++
+                }
             }
         }
     })

@@ -408,12 +408,27 @@ function Player(sprite, dx, dy, turnLeft = false, turnRight = false) {
     }
 }
 
+function fillUpto(arr, limit) {
+    if(limit >= 60) return
+    let step = 0
+    while (step < limit) {
+        let row = Math.floor(Math.random() * arr.length)
+        let col = Math.floor(Math.random() * arr[0].length)
+        let cell = arr[row][col]
+        if (cell == 0) {
+            arr[row][col] = 1
+            step++
+        }
+    }
+}
+
 function updatePlayer(player) {
     if (!player.alive) {
         return
     }
 
     player.state.molecules.forEach(molecule => {
+
         if (molecule.alive) {
             if (molecule.type == _lib_utils__WEBPACK_IMPORTED_MODULE_0__["MoleculeType"].METHANE && Object(_lib_utils__WEBPACK_IMPORTED_MODULE_0__["distance"])(player, molecule) <= molecule.radius * 1.5) {
                 player.alive = false
@@ -429,7 +444,9 @@ function updatePlayer(player) {
             }
             if (molecule.type == _lib_utils__WEBPACK_IMPORTED_MODULE_0__["MoleculeType"].OXYGEN && Object(_lib_utils__WEBPACK_IMPORTED_MODULE_0__["distance"])(player, molecule) <= molecule.radius * 2) {
                 molecule.alive = false
-                player.state.oxygenCurrent++
+                if (player.state.oxygenCurrent < player.state.oxygenGoal) {
+                    player.state.oxygenCurrent++
+                }
             }
         }
     })
@@ -693,12 +710,13 @@ function millisToMinutesAndSeconds(millis) {
 /*!*****************!*\
   !*** ./main.js ***!
   \*****************/
-/*! exports provided: fire */
+/*! exports provided: fire, drawBackground */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "fire", function() { return fire; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "drawBackground", function() { return drawBackground; });
 /* harmony import */ var _entities_bullet__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./entities/bullet */ "./entities/bullet.js");
 /* harmony import */ var _ui_impulsebar__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ui/impulsebar */ "./ui/impulsebar.js");
 /* harmony import */ var _entities_molecule__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./entities/molecule */ "./entities/molecule.js");
@@ -718,27 +736,26 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+const canvas = document.getElementsByTagName("canvas")[0];
+canvas.addEventListener("click", () => {
+    if (state.scene == "menu") {
 
+        state.scene = "loadingsound"
+        Object(_sound_sound__WEBPACK_IMPORTED_MODULE_5__["loadMainSong"])(state)
+    }
+})
+const ctx = canvas.getContext("2d");
 
-// let btn = document.getElementById("testbtn")
-// btn.addEventListener("click", () => {
-//     loadMainSong()
-// })
-
-const canvas = document.getElementsByTagName("canvas")[0]
-const ctx = canvas.getContext("2d")
-
-
-let forward = false
-let brake = false
-let currentTime
-let lastTime = new Date().getTime()
-const startTime = lastTime
-const limitTime = 60000
-let timeToFinish = 60000
-let gamepads
-let gamepadIsConnected = false
-let isGameFinish = false
+let forward = false;
+let brake = false;
+let currentTime;
+let lastTime = new Date().getTime();
+const startTime = lastTime;
+const limitTime = 60000;
+let timeToFinish = 60000;
+let gamepads;
+let gamepadIsConnected = false;
+let isGameFinish = false;
 
 // shared state
 const state = {
@@ -750,12 +767,22 @@ const state = {
     oxygenCurrent: 0,
     oxygenGoal: 5,
     shootDelay: 200,
-}
+    model:
+        [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ],
+    scene: "menu"
+};
 
-Object(_lib_utils__WEBPACK_IMPORTED_MODULE_7__["setCanvasResolution"])(canvas, state.nativeWidth, state.nativeHeight)
+Object(_lib_utils__WEBPACK_IMPORTED_MODULE_7__["setCanvasResolution"])(canvas, state.nativeWidth, state.nativeHeight);
 window.addEventListener("resize", () => {
-    Object(_lib_utils__WEBPACK_IMPORTED_MODULE_7__["setCanvasResolution"])(canvas, state.nativeWidth, state.nativeHeight)
-})
+    Object(_lib_utils__WEBPACK_IMPORTED_MODULE_7__["setCanvasResolution"])(canvas, state.nativeWidth, state.nativeHeight);
+});
 
 window.addEventListener("gamepadconnected", e => {
     console.log(
@@ -764,178 +791,226 @@ window.addEventListener("gamepadconnected", e => {
         e.gamepad.id,
         e.gamepad.buttons.length,
         e.gamepad.axes.length
-    )
-    gamepadIsConnected = true
-})
+    );
+    gamepadIsConnected = true;
+});
 
-const sprite = Object(_entities_sprite__WEBPACK_IMPORTED_MODULE_6__["Sprite"])(
-    state,
-    state.nativeWidth / 2,
-    state.nativeHeight / 2
-)
+const sprite = Object(_entities_sprite__WEBPACK_IMPORTED_MODULE_6__["Sprite"])(state, state.nativeWidth / 2, state.nativeHeight / 2);
 
-const player = Object(_entities_player__WEBPACK_IMPORTED_MODULE_4__["Player"])(sprite, 2, 2)
+const player = Object(_entities_player__WEBPACK_IMPORTED_MODULE_4__["Player"])(sprite, 2, 2);
 
 function setControls(player) {
-    const KEY_LEFT = 37
-    const KEY_UP = 38
-    const KEY_RIGHT = 39
-    const KEY_DOWN = 40
-    const KEY_SPACE = 32
+    const KEY_LEFT = 37;
+    const KEY_UP = 38;
+    const KEY_RIGHT = 39;
+    const KEY_DOWN = 40;
+    const KEY_SPACE = 32;
 
     window.addEventListener("keydown", e => {
-        const keyCode = e.keyCode
+        if (!player.alive) { return }
+        const keyCode = e.keyCode;
         switch (keyCode) {
             case KEY_RIGHT:
-                player.turnRight = true
-                break
+                player.turnRight = true;
+                break;
             case KEY_LEFT:
-                player.turnLeft = true
-                break
+                player.turnLeft = true;
+                break;
             case KEY_SPACE:
-                // fireSound()
-                fire(state.bullets, player)
-                break
+                Object(_sound_sound__WEBPACK_IMPORTED_MODULE_5__["fireSound"])()
+                fire(state.bullets, player);
+                break;
             default:
-                break
+                break;
         }
         if (keyCode == KEY_UP) {
             // impulseSound()
-            forward = true
+            forward = true;
         }
         if (keyCode == KEY_DOWN) {
-            brake = true
+            brake = true;
         }
-    })
+    });
     window.addEventListener("keyup", e => {
-        const keyCode = e.keyCode
+        const keyCode = e.keyCode;
         switch (keyCode) {
             case KEY_RIGHT:
-                player.turnRight = false
-                break
+                player.turnRight = false;
+                break;
             case KEY_LEFT:
-                player.turnLeft = false
-                break
+                player.turnLeft = false;
+                break;
             default:
-                break
+                break;
         }
         if (keyCode == KEY_UP) {
-            forward = false
+            forward = false;
         }
         if (keyCode == KEY_DOWN) {
-            brake = false
+            brake = false;
         }
-    })
+    });
 
     window.addEventListener("gamepadconnected", e => {
-        const gp = navigator.getGamepads()[e.gamepad.index]
+        const gp = navigator.getGamepads()[e.gamepad.index];
         Object(_lib_utils__WEBPACK_IMPORTED_MODULE_7__["logger"])(
             "Gamepad connected at index %d: %s. %d buttons, %d axes.",
             gp.index,
             gp.id,
             gp.buttons.length,
             gp.axes.length
-        )
-    })
+        );
+    });
 }
 
 const oxygenBar = Object(_ui_oxygenbar__WEBPACK_IMPORTED_MODULE_3__["OxygenBar"])(
     Object(_entities_sprite__WEBPACK_IMPORTED_MODULE_6__["Sprite"])(state, 16, 8),
     state.oxygenGoal,
     state.oxygenCurrent
-)
+);
 
 const impulseBar = Object(_ui_impulsebar__WEBPACK_IMPORTED_MODULE_1__["ImpulseBar"])(
     Object(_entities_sprite__WEBPACK_IMPORTED_MODULE_6__["Sprite"])(state, 525, 8),
     state.impulse,
     state.maxImpulse
-)
+);
 
-setControls(player)
+setControls(player);
 
-Object(_entities_molecule__WEBPACK_IMPORTED_MODULE_2__["makeMolecules"])(state, 5)
+Object(_entities_molecule__WEBPACK_IMPORTED_MODULE_2__["makeMolecules"])(state, 5);
 
-state.oxygenGoal = state.molecules.length * 2
+state.oxygenGoal = state.molecules.length * 2;
 
 function fire(bullets, player) {
     if (player.state.shootDelay <= 0) {
-        const sprite = Object(_entities_sprite__WEBPACK_IMPORTED_MODULE_6__["Sprite"])(
-            player.state,
-            player.x + 5,
-            player.y + 6
-        )
-        const bullet = Object(_entities_bullet__WEBPACK_IMPORTED_MODULE_0__["Bullet"])(sprite, 2, 2, player.rotation)
-        bullets.push(bullet)
-        player.state.shootDelay = 200
+        const sprite = Object(_entities_sprite__WEBPACK_IMPORTED_MODULE_6__["Sprite"])(player.state, player.x + 5, player.y + 6);
+        const bullet = Object(_entities_bullet__WEBPACK_IMPORTED_MODULE_0__["Bullet"])(sprite, 2, 2, player.rotation);
+        bullets.push(bullet);
+        player.state.shootDelay = 200;
     }
+}
+
+function drawBackground(state) {
+
+    const ctx = state.canvas.getContext("2d");
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+
+    let tileSizeX = 16;
+    let tileSizeY = 15;
+
+    let x = 0;
+    let y = 0;
+    let img = new Image();
+    const filename = "spritesheet.png";
+    img.src = `./assets/${filename}`;
+
+
+
+    for (let row = 0; row < 6; row++) {
+        for (let col = 0; col < 10; col++) {
+            if (!isGameFinish) {
+                ctx.drawImage(img, 13 * tileSizeX, 0, tileSizeX, tileSizeY, x + col * tileSizeX * 4, y + row * tileSizeY * 4, tileSizeX * 4, tileSizeY * 4);
+            } else {
+                ctx.drawImage(img, 14 * tileSizeX, 0, tileSizeX, tileSizeY, x + col * tileSizeX * 4, y + row * tileSizeY * 4, tileSizeX * 4, tileSizeY * 4);
+            }
+        }
+    }
+
+    ctx.restore();
 }
 
 function gameloop() {
     // animate
     if (isGameFinish) {
-        Object(_lib_utils__WEBPACK_IMPORTED_MODULE_7__["drawText"])(state.canvas, "you win!", state.nativeWidth / 2 - 16 * 3, state.nativeHeight / 2, 1)
-        return
+        //drawBackground(state)
+        // drawPlayer(player);
+        // Draw UI
+        Object(_lib_utils__WEBPACK_IMPORTED_MODULE_7__["drawText"])(state.canvas, Object(_lib_utils__WEBPACK_IMPORTED_MODULE_7__["millisToMinutesAndSeconds"])(timeToFinish), state.nativeWidth / 2 - 16 * 3, 8, 1)
+
+        Object(_ui_oxygenbar__WEBPACK_IMPORTED_MODULE_3__["drawOxygenBar"])(oxygenBar)
+        Object(_ui_impulsebar__WEBPACK_IMPORTED_MODULE_1__["drawImpulseBar"])(impulseBar)
+        if (state.scene == "win") {
+
+            Object(_lib_utils__WEBPACK_IMPORTED_MODULE_7__["drawText"])(
+                state.canvas,
+                "you win!",
+                state.nativeWidth / 2 - 16 * 3,
+                state.nativeHeight / 2,
+                1
+            );
+        } else if (state.scene == "lose") {
+            Object(_lib_utils__WEBPACK_IMPORTED_MODULE_7__["drawText"])(
+                state.canvas,
+                "you lose!",
+                state.nativeWidth / 2 - 16 * 3,
+                state.nativeHeight / 2,
+                1
+            );
+        }
+        return;
     }
-    requestAnimationFrame(gameloop)
-    ctx.clearRect(-16, -16, state.nativeWidth + 16, state.nativeHeight + 16)
+    requestAnimationFrame(gameloop);
+    ctx.clearRect(-16, -16, state.nativeWidth + 16, state.nativeHeight + 16);
 
-    state.shootDelay -= 15
-    // console.log(shootDelay)
+    state.shootDelay -= 15;
 
-    currentTime = new Date().getTime()
+    currentTime = new Date().getTime();
     if (currentTime - lastTime >= 1000) {
-        timeToFinish = limitTime - (currentTime - startTime)
-        lastTime = currentTime
+        timeToFinish = limitTime - (currentTime - startTime);
+        lastTime = currentTime;
     }
 
     // Gamepad
     if (gamepadIsConnected) {
-        gamepads = navigator.getGamepads()
+        gamepads = navigator.getGamepads();
 
-        const gp = gamepads[0]
-        const buttonLeft = gp.buttons[14]
-        const buttonRight = gp.buttons[15]
-        const impulseButton = gp.buttons[12]
-        const brakeButton = gp.buttons[13]
-        const fireButton = gp.buttons[0]
+        const gp = gamepads[0];
+        const buttonLeft = gp.buttons[14];
+        const buttonRight = gp.buttons[15];
+        const impulseButton = gp.buttons[12];
+        const brakeButton = gp.buttons[13];
+        const fireButton = gp.buttons[0];
 
         if (buttonLeft.pressed) {
-            player.turnLeft = true
+            player.turnLeft = true;
         } else {
-            player.turnLeft = false
+            player.turnLeft = false;
         }
         if (buttonRight.pressed) {
-            player.turnRight = true
+            player.turnRight = true;
         } else {
-            player.turnRight = false
+            player.turnRight = false;
         }
         if (impulseButton.pressed) {
-            forward = true
+            forward = true;
         } else {
-            forward = false
+            forward = false;
         }
         if (brakeButton.pressed) {
-            brake = true
+            brake = true;
         } else {
-            brake = false
+            brake = false;
         }
         if (fireButton.pressed) {
             // Controlar velocidad de disparo
-            fire(state.bullets, player)
+            fire(state.bullets, player);
         }
     }
 
-    if (true /* mainSongisLoaded */ ) {
-        // playMainSong()
+    if (state.scene == "play") {
+        Object(_sound_sound__WEBPACK_IMPORTED_MODULE_5__["playMainSong"])()
 
-        Object(_entities_player__WEBPACK_IMPORTED_MODULE_4__["updatePlayer"])(player)
-        Object(_entities_player__WEBPACK_IMPORTED_MODULE_4__["drawPlayer"])(player)
+        drawBackground(state);
 
-        Object(_entities_bullet__WEBPACK_IMPORTED_MODULE_0__["updateBullets"])(state.bullets)
-        Object(_entities_bullet__WEBPACK_IMPORTED_MODULE_0__["drawBullets"])(state.bullets)
+        Object(_entities_player__WEBPACK_IMPORTED_MODULE_4__["updatePlayer"])(player);
+        Object(_entities_player__WEBPACK_IMPORTED_MODULE_4__["drawPlayer"])(player);
+
+        Object(_entities_bullet__WEBPACK_IMPORTED_MODULE_0__["updateBullets"])(state.bullets);
+        Object(_entities_bullet__WEBPACK_IMPORTED_MODULE_0__["drawBullets"])(state.bullets);
 
         Object(_entities_molecule__WEBPACK_IMPORTED_MODULE_2__["updateMolecules"])(state.molecules)
-        Object(_entities_molecule__WEBPACK_IMPORTED_MODULE_2__["drawMolecules"])(state.molecules)
+        Object(_entities_molecule__WEBPACK_IMPORTED_MODULE_2__["drawMolecules"])(state.molecules);
 
         // Draw UI
         Object(_lib_utils__WEBPACK_IMPORTED_MODULE_7__["drawText"])(state.canvas, Object(_lib_utils__WEBPACK_IMPORTED_MODULE_7__["millisToMinutesAndSeconds"])(timeToFinish), state.nativeWidth / 2 - 16 * 3, 8, 1)
@@ -944,70 +1019,72 @@ function gameloop() {
         Object(_ui_impulsebar__WEBPACK_IMPORTED_MODULE_1__["drawImpulseBar"])(impulseBar)
 
         if (forward) {
-            state.impulse += 0.02
+            state.impulse += 0.02;
             // impulse *= 0.98
             if (state.impulse >= state.maxImpulse) {
-                state.impulse = state.maxImpulse
+                state.impulse = state.maxImpulse;
             }
         }
         if (brake) {
-            state.impulse *= 0.98
+            state.impulse *= 0.98;
             if (state.impulse <= 0) {
-                state.impulse = 0
+                state.impulse = 0;
             }
         }
 
+        if (state.oxygenCurrent >= state.oxygenGoal) {
+            isGameFinish = true;
+            state.scene = "win"
+        }
+
+        if (timeToFinish <= 0) {
+            isGameFinish = true;
+            state.scene = "lose"
+        }
+
+        if (!player.alive) {
+            isGameFinish = true;
+            state.scene = "lose"
+        }
     }
-    if (state.oxygenCurrent >= state.oxygenGoal) {
-        isGameFinish = true
+    else if (state.scene == "menu") {
+        drawBackground(state);
+
+        // eslint-disable-next-line no-inner-declarations
+        function drawParagraph(x, y, text, centered = true) {
+
+            for (let i = 0; i < text.length; i++) {
+                const sentence = text[i];
+                let length = centered ? sentence.length * 16 : 0
+                Object(_lib_utils__WEBPACK_IMPORTED_MODULE_7__["drawText"])(state.canvas, sentence, x - length / 2, i * 24 + y, 1)
+            }
+
+        }
+
+        let text = [
+            "Clean the clouds",
+            "Bring back the oxygen to the sky",
+            "by breaking the toxic molecules",
+            "and catching blue <oxygen> molecules"
+        ]
+        drawParagraph(state.nativeWidth / 2, 96, text)
+        Object(_lib_utils__WEBPACK_IMPORTED_MODULE_7__["drawText"])(state.canvas, "Press to play", state.nativeWidth / 2 - 112, state.nativeHeight / 2 + 16, 1)
+    } else if (state.scene === "loadingsound") {
+        drawBackground(state);
+        Object(_lib_utils__WEBPACK_IMPORTED_MODULE_7__["drawText"])(state.canvas, "Loading sound...", state.nativeWidth / 2 - 124, state.nativeHeight / 2, 1)
     }
+
     // Debug
-    ctx.save()
-    ctx.lineWidth = 1
-    ctx.strokeStyle = "purple"
-    ctx.strokeRect(0, 0, state.nativeWidth, state.nativeHeight)
-    ctx.restore()
+    // ctx.save();
+
+    // ctx.lineWidth = 1;
+    // ctx.strokeStyle = "purple";
+    // ctx.strokeRect(0, 0, state.nativeWidth, state.nativeHeight);
+    // ctx.restore();
     //
 }
 
-gameloop()
-
-
-/***/ }),
-
-/***/ "./sound/ZzFX.micro.js":
-/*!*****************************!*\
-  !*** ./sound/ZzFX.micro.js ***!
-  \*****************************/
-/*! exports provided: zzfx */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "zzfx", function() { return zzfx; });
-// ZzFXmicro - Zuper Zmall Zound Zynth - MIT License - Copyright 2019 Frank Force
-const zzfx_v = .5;
-const zzfx_x = new AudioContext;
-const zzfx = (e, f, a, b = 1, d = .1, g = 0, h = 0, k = 0, l = 0) => {
-    let S = 44100,
-        P = Math.PI;
-    a *= 2 * P / S;
-    a *= 1 + f * (2 * Math.random() - 1);
-    g *= 1E3 * P / (S ** 2);
-    b = 0 < b ? S * (10 < b ? 10 : b) | 0 : 1;
-    d *= b | 0;
-    k *= 2 * P / S;
-    l *= P;
-    f = [];
-    for (var m = 0, n = 0, c = 0; c < b; ++c) f[c] = e * zzfx_v * Math.cos(m * a * Math.cos(n * k + l)) * (c < d ? c / d : 1 - (c - d) / (b - d)), m += 1 + h * (2 * Math.random() - 1), n += 1 + h * (2 * Math.random() - 1), a += g;
-    e = zzfx_x.createBuffer(1, b, S);
-    a = zzfx_x.createBufferSource();
-    e.getChannelData(0).set(f);
-    a.buffer = e;
-    a.connect(zzfx_x.destination);
-    a.start();
-    return a
-}
+gameloop();
 
 
 /***/ }),
@@ -1463,7 +1540,7 @@ MusicGenerator.prototype.createAudioBuffer = function(callBack) {
 /*!************************!*\
   !*** ./sound/sound.js ***!
   \************************/
-/*! exports provided: mainSongisLoaded, loadMainSong, playMainSong */
+/*! exports provided: mainSongisLoaded, loadMainSong, playMainSong, fireSound */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1471,10 +1548,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "mainSongisLoaded", function() { return mainSongisLoaded; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "loadMainSong", function() { return loadMainSong; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "playMainSong", function() { return playMainSong; });
-/* harmony import */ var _ZzFX_micro__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ZzFX.micro */ "./sound/ZzFX.micro.js");
-/* harmony import */ var _sonantx__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./sonantx */ "./sound/sonantx.js");
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "fireSound", function() { return fireSound; });
+/* harmony import */ var _sonantx__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./sonantx */ "./sound/sonantx.js");
 
 
+
+let zzfx_v = .5;
+let zzfx_x = new AudioContext;
+let zzfx = (e, f, a, b = 1, d = .1, g = 0, h = 0, k = 0, l = 0) => { let S = 44100, P = Math.PI; a *= 2 * P / S; a *= 1 + f * (2 * Math.random() - 1); g *= 1E3 * P / (S ** 2); b = 0 < b ? S * (10 < b ? 10 : b) | 0 : 1; d *= b | 0; k *= 2 * P / S; l *= P; f = []; for (var m = 0, n = 0, c = 0; c < b; ++c)f[c] = e * zzfx_v * Math.cos(m * a * Math.cos(n * k + l)) * (c < d ? c / d : 1 - (c - d) / (b - d)), m += 1 + h * (2 * Math.random() - 1), n += 1 + h * (2 * Math.random() - 1), a += g; e = zzfx_x.createBuffer(1, b, S); a = zzfx_x.createBufferSource(); e.getChannelData(0).set(f); a.buffer = e; a.connect(zzfx_x.destination); a.start(); return a }
 
 
 let audioCtx
@@ -1483,8 +1564,8 @@ let mainSoundIsStarted = false
 
 let mainSongisLoaded = false
 
-function loadMainSong() {
-    let songGen = new _sonantx__WEBPACK_IMPORTED_MODULE_1__["MusicGenerator"](mainSong());
+function loadMainSong(state) {
+    let songGen = new _sonantx__WEBPACK_IMPORTED_MODULE_0__["MusicGenerator"](mainSong());
     audioCtx = new AudioContext()
     console.log("loading sound...")
     songGen.createAudioBuffer(function (buffer) {
@@ -1498,6 +1579,7 @@ function loadMainSong() {
         // audioCtx.resume()
         // source.start(0)
         mainSongisLoaded = true
+        state.scene = "play"
     });
 
 
@@ -1525,880 +1607,880 @@ function playMainSong() {
 //     zzfx(1, .1, 20, 1, .07, .9, 4.7, .3, .69);
 // }
 
-// function fireSound() {
-//     zzfx(1, .1, 1495, .2, .25, .1, .1, 9.7, .98);
-// }
+function fireSound() {
+    zzfx(1, .1, 1495, .2, .25, .1, .1, 9.7, .98);
+}
 
 function mainSong() {
     return {
         "songLen": 37,
         "songData": [{
-                "osc1_oct": 7,
-                "osc1_det": 0,
-                "osc1_detune": 0,
-                "osc1_xenv": 0,
-                "osc1_vol": 192,
-                "osc1_waveform": 3,
-                "osc2_oct": 7,
-                "osc2_det": 0,
-                "osc2_detune": 7,
-                "osc2_xenv": 0,
-                "osc2_vol": 201,
-                "osc2_waveform": 3,
-                "noise_fader": 0,
-                "env_attack": 789,
-                "env_sustain": 1234,
-                "env_release": 13636,
-                "env_master": 191,
-                "fx_filter": 2,
-                "fx_freq": 5839,
-                "fx_resonance": 254,
-                "fx_delay_time": 6,
-                "fx_delay_amt": 121,
-                "fx_pan_freq": 6,
-                "fx_pan_amt": 147,
-                "lfo_osc1_freq": 0,
-                "lfo_fx_freq": 1,
-                "lfo_freq": 6,
-                "lfo_amt": 195,
-                "lfo_waveform": 0,
-                "p": [
-                    1,
-                    2,
+            "osc1_oct": 7,
+            "osc1_det": 0,
+            "osc1_detune": 0,
+            "osc1_xenv": 0,
+            "osc1_vol": 192,
+            "osc1_waveform": 3,
+            "osc2_oct": 7,
+            "osc2_det": 0,
+            "osc2_detune": 7,
+            "osc2_xenv": 0,
+            "osc2_vol": 201,
+            "osc2_waveform": 3,
+            "noise_fader": 0,
+            "env_attack": 789,
+            "env_sustain": 1234,
+            "env_release": 13636,
+            "env_master": 191,
+            "fx_filter": 2,
+            "fx_freq": 5839,
+            "fx_resonance": 254,
+            "fx_delay_time": 6,
+            "fx_delay_amt": 121,
+            "fx_pan_freq": 6,
+            "fx_pan_amt": 147,
+            "lfo_osc1_freq": 0,
+            "lfo_fx_freq": 1,
+            "lfo_freq": 6,
+            "lfo_amt": 195,
+            "lfo_waveform": 0,
+            "p": [
+                1,
+                2,
+                0,
+                0,
+                1,
+                2,
+                1,
+                2
+            ],
+            "c": [{
+                "n": [
+                    154,
+                    0,
+                    154,
+                    0,
+                    152,
+                    0,
+                    147,
                     0,
                     0,
-                    1,
-                    2,
-                    1,
-                    2
-                ],
-                "c": [{
-                        "n": [
-                            154,
-                            0,
-                            154,
-                            0,
-                            152,
-                            0,
-                            147,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            154,
-                            0,
-                            154,
-                            0,
-                            152,
-                            0,
-                            157,
-                            0,
-                            0,
-                            0,
-                            156,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0
-                        ]
-                    },
-                    {
-                        "n": [
-                            154,
-                            0,
-                            154,
-                            0,
-                            152,
-                            0,
-                            147,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            154,
-                            0,
-                            154,
-                            0,
-                            152,
-                            0,
-                            157,
-                            0,
-                            0,
-                            0,
-                            159,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0
-                        ]
-                    }
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    154,
+                    0,
+                    154,
+                    0,
+                    152,
+                    0,
+                    157,
+                    0,
+                    0,
+                    0,
+                    156,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
                 ]
             },
             {
-                "osc1_oct": 7,
-                "osc1_det": 0,
-                "osc1_detune": 0,
-                "osc1_xenv": 0,
-                "osc1_vol": 255,
-                "osc1_waveform": 2,
-                "osc2_oct": 8,
-                "osc2_det": 0,
-                "osc2_detune": 18,
-                "osc2_xenv": 1,
-                "osc2_vol": 191,
-                "osc2_waveform": 2,
-                "noise_fader": 0,
-                "env_attack": 3997,
-                "env_sustain": 56363,
-                "env_release": 100000,
-                "env_master": 255,
-                "fx_filter": 2,
-                "fx_freq": 392,
-                "fx_resonance": 255,
-                "fx_delay_time": 8,
-                "fx_delay_amt": 69,
-                "fx_pan_freq": 5,
-                "fx_pan_amt": 67,
-                "lfo_osc1_freq": 0,
-                "lfo_fx_freq": 1,
-                "lfo_freq": 4,
-                "lfo_amt": 57,
-                "lfo_waveform": 3,
-                "p": [
-                    1,
-                    2,
-                    1,
-                    2,
-                    1,
-                    2,
-                    1,
-                    2
-                ],
-                "c": [{
-                        "n": [
-                            130,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0
-                        ]
-                    },
-                    {
-                        "n": [
-                            123,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0
-                        ]
-                    }
+                "n": [
+                    154,
+                    0,
+                    154,
+                    0,
+                    152,
+                    0,
+                    147,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    154,
+                    0,
+                    154,
+                    0,
+                    152,
+                    0,
+                    157,
+                    0,
+                    0,
+                    0,
+                    159,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
                 ]
-            },
-            {
-                "osc1_oct": 8,
-                "osc1_det": 0,
-                "osc1_detune": 0,
-                "osc1_xenv": 0,
-                "osc1_vol": 0,
-                "osc1_waveform": 0,
-                "osc2_oct": 8,
-                "osc2_det": 0,
-                "osc2_detune": 0,
-                "osc2_xenv": 0,
-                "osc2_vol": 0,
-                "osc2_waveform": 0,
-                "noise_fader": 60,
-                "env_attack": 50,
-                "env_sustain": 419,
-                "env_release": 4607,
-                "env_master": 130,
-                "fx_filter": 1,
-                "fx_freq": 10332,
-                "fx_resonance": 120,
-                "fx_delay_time": 4,
-                "fx_delay_amt": 16,
-                "fx_pan_freq": 5,
-                "fx_pan_amt": 108,
-                "lfo_osc1_freq": 0,
-                "lfo_fx_freq": 0,
-                "lfo_freq": 5,
-                "lfo_amt": 187,
-                "lfo_waveform": 0,
-                "p": [
-                    0,
-                    0,
-                    0,
-                    0,
-                    1,
-                    1
-                ],
-                "c": [{
-                    "n": [
-                        0,
-                        0,
-                        147,
-                        0,
-                        0,
-                        0,
-                        147,
-                        147,
-                        0,
-                        0,
-                        147,
-                        0,
-                        0,
-                        147,
-                        0,
-                        147,
-                        0,
-                        0,
-                        147,
-                        0,
-                        0,
-                        0,
-                        147,
-                        147,
-                        0,
-                        0,
-                        147,
-                        0,
-                        0,
-                        147,
-                        0,
-                        147
-                    ]
-                }]
-            },
-            {
-                "osc1_oct": 7,
-                "osc1_det": 0,
-                "osc1_detune": 0,
-                "osc1_xenv": 1,
-                "osc1_vol": 255,
-                "osc1_waveform": 0,
-                "osc2_oct": 7,
-                "osc2_det": 0,
-                "osc2_detune": 0,
-                "osc2_xenv": 1,
-                "osc2_vol": 255,
-                "osc2_waveform": 0,
-                "noise_fader": 0,
-                "env_attack": 50,
-                "env_sustain": 150,
-                "env_release": 4800,
-                "env_master": 200,
-                "fx_filter": 2,
-                "fx_freq": 600,
-                "fx_resonance": 254,
-                "fx_delay_time": 0,
-                "fx_delay_amt": 0,
-                "fx_pan_freq": 0,
-                "fx_pan_amt": 0,
-                "lfo_osc1_freq": 0,
-                "lfo_fx_freq": 0,
-                "lfo_freq": 0,
-                "lfo_amt": 0,
-                "lfo_waveform": 0,
-                "p": [
-                    1,
-                    1,
-                    1,
-                    1,
-                    1,
-                    1
-                ],
-                "c": [{
-                    "n": [
-                        147,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        147,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        147,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        147,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0
-                    ]
-                }]
-            },
-            {
-                "osc1_oct": 7,
-                "osc1_det": 0,
-                "osc1_detune": 0,
-                "osc1_xenv": 0,
-                "osc1_vol": 255,
-                "osc1_waveform": 2,
-                "osc2_oct": 7,
-                "osc2_det": 0,
-                "osc2_detune": 9,
-                "osc2_xenv": 0,
-                "osc2_vol": 154,
-                "osc2_waveform": 2,
-                "noise_fader": 0,
-                "env_attack": 2418,
-                "env_sustain": 1075,
-                "env_release": 10614,
-                "env_master": 240,
-                "fx_filter": 3,
-                "fx_freq": 2962,
-                "fx_resonance": 255,
-                "fx_delay_time": 6,
-                "fx_delay_amt": 117,
-                "fx_pan_freq": 3,
-                "fx_pan_amt": 73,
-                "lfo_osc1_freq": 0,
-                "lfo_fx_freq": 1,
-                "lfo_freq": 5,
-                "lfo_amt": 124,
-                "lfo_waveform": 0,
-                "p": [
-                    0,
-                    0,
-                    0,
-                    0,
-                    1,
-                    2,
-                    1,
-                    2
-                ],
-                "c": [{
-                        "n": [
-                            154,
-                            0,
-                            154,
-                            0,
-                            152,
-                            0,
-                            147,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            154,
-                            0,
-                            154,
-                            0,
-                            152,
-                            0,
-                            157,
-                            0,
-                            0,
-                            0,
-                            156,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0
-                        ]
-                    },
-                    {
-                        "n": [
-                            154,
-                            0,
-                            154,
-                            0,
-                            152,
-                            0,
-                            147,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            154,
-                            0,
-                            147,
-                            0,
-                            152,
-                            0,
-                            157,
-                            0,
-                            0,
-                            0,
-                            159,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0
-                        ]
-                    }
-                ]
-            },
-            {
-                "osc1_oct": 7,
-                "osc1_det": 0,
-                "osc1_detune": 0,
-                "osc1_xenv": 0,
-                "osc1_vol": 192,
-                "osc1_waveform": 1,
-                "osc2_oct": 6,
-                "osc2_det": 0,
-                "osc2_detune": 9,
-                "osc2_xenv": 0,
-                "osc2_vol": 192,
-                "osc2_waveform": 1,
-                "noise_fader": 0,
-                "env_attack": 137,
-                "env_sustain": 2000,
-                "env_release": 4611,
-                "env_master": 192,
-                "fx_filter": 1,
-                "fx_freq": 982,
-                "fx_resonance": 89,
-                "fx_delay_time": 6,
-                "fx_delay_amt": 25,
-                "fx_pan_freq": 6,
-                "fx_pan_amt": 77,
-                "lfo_osc1_freq": 0,
-                "lfo_fx_freq": 1,
-                "lfo_freq": 3,
-                "lfo_amt": 69,
-                "lfo_waveform": 0,
-                "p": [
-                    1,
-                    2,
-                    1,
-                    3,
-                    1,
-                    3
-                ],
-                "c": [{
-                        "n": [
-                            130,
-                            0,
-                            130,
-                            0,
-                            142,
-                            0,
-                            130,
-                            130,
-                            0,
-                            142,
-                            130,
-                            0,
-                            142,
-                            0,
-                            130,
-                            0,
-                            130,
-                            0,
-                            130,
-                            0,
-                            142,
-                            0,
-                            130,
-                            130,
-                            0,
-                            142,
-                            130,
-                            0,
-                            142,
-                            0,
-                            130,
-                            0
-                        ]
-                    },
-                    {
-                        "n": [
-                            123,
-                            0,
-                            123,
-                            0,
-                            135,
-                            0,
-                            123,
-                            123,
-                            0,
-                            135,
-                            123,
-                            0,
-                            135,
-                            0,
-                            123,
-                            0,
-                            123,
-                            0,
-                            123,
-                            0,
-                            135,
-                            0,
-                            123,
-                            123,
-                            0,
-                            135,
-                            123,
-                            0,
-                            135,
-                            0,
-                            123,
-                            0
-                        ]
-                    },
-                    {
-                        "n": [
-                            135,
-                            0,
-                            135,
-                            0,
-                            147,
-                            0,
-                            135,
-                            135,
-                            0,
-                            147,
-                            135,
-                            0,
-                            147,
-                            0,
-                            135,
-                            0,
-                            135,
-                            0,
-                            135,
-                            0,
-                            147,
-                            0,
-                            135,
-                            135,
-                            0,
-                            147,
-                            135,
-                            0,
-                            147,
-                            0,
-                            135,
-                            0
-                        ]
-                    }
-                ]
-            },
-            {
-                "osc1_oct": 7,
-                "osc1_det": 0,
-                "osc1_detune": 0,
-                "osc1_xenv": 0,
-                "osc1_vol": 255,
-                "osc1_waveform": 3,
-                "osc2_oct": 8,
-                "osc2_det": 0,
-                "osc2_detune": 0,
-                "osc2_xenv": 0,
-                "osc2_vol": 255,
-                "osc2_waveform": 0,
-                "noise_fader": 127,
-                "env_attack": 22,
-                "env_sustain": 88,
-                "env_release": 3997,
-                "env_master": 255,
-                "fx_filter": 3,
-                "fx_freq": 4067,
-                "fx_resonance": 234,
-                "fx_delay_time": 4,
-                "fx_delay_amt": 33,
-                "fx_pan_freq": 2,
-                "fx_pan_amt": 84,
-                "lfo_osc1_freq": 0,
-                "lfo_fx_freq": 1,
-                "lfo_freq": 3,
-                "lfo_amt": 28,
-                "lfo_waveform": 0,
-                "p": [
-                    0,
-                    0,
-                    1,
-                    2,
-                    1,
-                    2,
-                    1,
-                    3
-                ],
-                "c": [{
-                        "n": [
-                            0,
-                            0,
-                            142,
-                            0,
-                            154,
-                            0,
-                            0,
-                            0,
-                            142,
-                            0,
-                            0,
-                            0,
-                            154,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            142,
-                            0,
-                            154,
-                            0,
-                            0,
-                            0,
-                            142,
-                            0,
-                            0,
-                            0,
-                            154,
-                            0,
-                            0,
-                            0
-                        ]
-                    },
-                    {
-                        "n": [
-                            0,
-                            0,
-                            147,
-                            0,
-                            154,
-                            0,
-                            0,
-                            0,
-                            147,
-                            0,
-                            0,
-                            0,
-                            154,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            147,
-                            0,
-                            154,
-                            0,
-                            147,
-                            0,
-                            0,
-                            0,
-                            154,
-                            0,
-                            0,
-                            0,
-                            154,
-                            0
-                        ]
-                    },
-                    {
-                        "n": [
-                            0,
-                            0,
-                            147,
-                            0,
-                            154,
-                            0,
-                            0,
-                            0,
-                            147,
-                            0,
-                            0,
-                            0,
-                            154,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            147,
-                            0,
-                            154,
-                            0,
-                            0,
-                            0,
-                            147,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0
-                        ]
-                    }
-                ]
-            },
-            {
-                "osc1_oct": 8,
-                "osc1_det": 0,
-                "osc1_detune": 0,
-                "osc1_xenv": 0,
-                "osc1_vol": 0,
-                "osc1_waveform": 0,
-                "osc2_oct": 8,
-                "osc2_det": 0,
-                "osc2_detune": 0,
-                "osc2_xenv": 0,
-                "osc2_vol": 0,
-                "osc2_waveform": 0,
-                "noise_fader": 255,
-                "env_attack": 140347,
-                "env_sustain": 9216,
-                "env_release": 133417,
-                "env_master": 208,
-                "fx_filter": 2,
-                "fx_freq": 2500,
-                "fx_resonance": 16,
-                "fx_delay_time": 2,
-                "fx_delay_amt": 157,
-                "fx_pan_freq": 8,
-                "fx_pan_amt": 207,
-                "lfo_osc1_freq": 0,
-                "lfo_fx_freq": 1,
-                "lfo_freq": 2,
-                "lfo_amt": 51,
-                "lfo_waveform": 0,
-                "p": [
-                    0,
-                    0,
-                    1,
-                    1,
-                    1,
-                    1,
-                    1,
-                    1
-                ],
-                "c": [{
-                    "n": [
-                        147,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0
-                    ]
-                }]
             }
+            ]
+        },
+        {
+            "osc1_oct": 7,
+            "osc1_det": 0,
+            "osc1_detune": 0,
+            "osc1_xenv": 0,
+            "osc1_vol": 255,
+            "osc1_waveform": 2,
+            "osc2_oct": 8,
+            "osc2_det": 0,
+            "osc2_detune": 18,
+            "osc2_xenv": 1,
+            "osc2_vol": 191,
+            "osc2_waveform": 2,
+            "noise_fader": 0,
+            "env_attack": 3997,
+            "env_sustain": 56363,
+            "env_release": 100000,
+            "env_master": 255,
+            "fx_filter": 2,
+            "fx_freq": 392,
+            "fx_resonance": 255,
+            "fx_delay_time": 8,
+            "fx_delay_amt": 69,
+            "fx_pan_freq": 5,
+            "fx_pan_amt": 67,
+            "lfo_osc1_freq": 0,
+            "lfo_fx_freq": 1,
+            "lfo_freq": 4,
+            "lfo_amt": 57,
+            "lfo_waveform": 3,
+            "p": [
+                1,
+                2,
+                1,
+                2,
+                1,
+                2,
+                1,
+                2
+            ],
+            "c": [{
+                "n": [
+                    130,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            },
+            {
+                "n": [
+                    123,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            }
+            ]
+        },
+        {
+            "osc1_oct": 8,
+            "osc1_det": 0,
+            "osc1_detune": 0,
+            "osc1_xenv": 0,
+            "osc1_vol": 0,
+            "osc1_waveform": 0,
+            "osc2_oct": 8,
+            "osc2_det": 0,
+            "osc2_detune": 0,
+            "osc2_xenv": 0,
+            "osc2_vol": 0,
+            "osc2_waveform": 0,
+            "noise_fader": 60,
+            "env_attack": 50,
+            "env_sustain": 419,
+            "env_release": 4607,
+            "env_master": 130,
+            "fx_filter": 1,
+            "fx_freq": 10332,
+            "fx_resonance": 120,
+            "fx_delay_time": 4,
+            "fx_delay_amt": 16,
+            "fx_pan_freq": 5,
+            "fx_pan_amt": 108,
+            "lfo_osc1_freq": 0,
+            "lfo_fx_freq": 0,
+            "lfo_freq": 5,
+            "lfo_amt": 187,
+            "lfo_waveform": 0,
+            "p": [
+                0,
+                0,
+                0,
+                0,
+                1,
+                1
+            ],
+            "c": [{
+                "n": [
+                    0,
+                    0,
+                    147,
+                    0,
+                    0,
+                    0,
+                    147,
+                    147,
+                    0,
+                    0,
+                    147,
+                    0,
+                    0,
+                    147,
+                    0,
+                    147,
+                    0,
+                    0,
+                    147,
+                    0,
+                    0,
+                    0,
+                    147,
+                    147,
+                    0,
+                    0,
+                    147,
+                    0,
+                    0,
+                    147,
+                    0,
+                    147
+                ]
+            }]
+        },
+        {
+            "osc1_oct": 7,
+            "osc1_det": 0,
+            "osc1_detune": 0,
+            "osc1_xenv": 1,
+            "osc1_vol": 255,
+            "osc1_waveform": 0,
+            "osc2_oct": 7,
+            "osc2_det": 0,
+            "osc2_detune": 0,
+            "osc2_xenv": 1,
+            "osc2_vol": 255,
+            "osc2_waveform": 0,
+            "noise_fader": 0,
+            "env_attack": 50,
+            "env_sustain": 150,
+            "env_release": 4800,
+            "env_master": 200,
+            "fx_filter": 2,
+            "fx_freq": 600,
+            "fx_resonance": 254,
+            "fx_delay_time": 0,
+            "fx_delay_amt": 0,
+            "fx_pan_freq": 0,
+            "fx_pan_amt": 0,
+            "lfo_osc1_freq": 0,
+            "lfo_fx_freq": 0,
+            "lfo_freq": 0,
+            "lfo_amt": 0,
+            "lfo_waveform": 0,
+            "p": [
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+            ],
+            "c": [{
+                "n": [
+                    147,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    147,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    147,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    147,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            }]
+        },
+        {
+            "osc1_oct": 7,
+            "osc1_det": 0,
+            "osc1_detune": 0,
+            "osc1_xenv": 0,
+            "osc1_vol": 255,
+            "osc1_waveform": 2,
+            "osc2_oct": 7,
+            "osc2_det": 0,
+            "osc2_detune": 9,
+            "osc2_xenv": 0,
+            "osc2_vol": 154,
+            "osc2_waveform": 2,
+            "noise_fader": 0,
+            "env_attack": 2418,
+            "env_sustain": 1075,
+            "env_release": 10614,
+            "env_master": 240,
+            "fx_filter": 3,
+            "fx_freq": 2962,
+            "fx_resonance": 255,
+            "fx_delay_time": 6,
+            "fx_delay_amt": 117,
+            "fx_pan_freq": 3,
+            "fx_pan_amt": 73,
+            "lfo_osc1_freq": 0,
+            "lfo_fx_freq": 1,
+            "lfo_freq": 5,
+            "lfo_amt": 124,
+            "lfo_waveform": 0,
+            "p": [
+                0,
+                0,
+                0,
+                0,
+                1,
+                2,
+                1,
+                2
+            ],
+            "c": [{
+                "n": [
+                    154,
+                    0,
+                    154,
+                    0,
+                    152,
+                    0,
+                    147,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    154,
+                    0,
+                    154,
+                    0,
+                    152,
+                    0,
+                    157,
+                    0,
+                    0,
+                    0,
+                    156,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            },
+            {
+                "n": [
+                    154,
+                    0,
+                    154,
+                    0,
+                    152,
+                    0,
+                    147,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    154,
+                    0,
+                    147,
+                    0,
+                    152,
+                    0,
+                    157,
+                    0,
+                    0,
+                    0,
+                    159,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            }
+            ]
+        },
+        {
+            "osc1_oct": 7,
+            "osc1_det": 0,
+            "osc1_detune": 0,
+            "osc1_xenv": 0,
+            "osc1_vol": 192,
+            "osc1_waveform": 1,
+            "osc2_oct": 6,
+            "osc2_det": 0,
+            "osc2_detune": 9,
+            "osc2_xenv": 0,
+            "osc2_vol": 192,
+            "osc2_waveform": 1,
+            "noise_fader": 0,
+            "env_attack": 137,
+            "env_sustain": 2000,
+            "env_release": 4611,
+            "env_master": 192,
+            "fx_filter": 1,
+            "fx_freq": 982,
+            "fx_resonance": 89,
+            "fx_delay_time": 6,
+            "fx_delay_amt": 25,
+            "fx_pan_freq": 6,
+            "fx_pan_amt": 77,
+            "lfo_osc1_freq": 0,
+            "lfo_fx_freq": 1,
+            "lfo_freq": 3,
+            "lfo_amt": 69,
+            "lfo_waveform": 0,
+            "p": [
+                1,
+                2,
+                1,
+                3,
+                1,
+                3
+            ],
+            "c": [{
+                "n": [
+                    130,
+                    0,
+                    130,
+                    0,
+                    142,
+                    0,
+                    130,
+                    130,
+                    0,
+                    142,
+                    130,
+                    0,
+                    142,
+                    0,
+                    130,
+                    0,
+                    130,
+                    0,
+                    130,
+                    0,
+                    142,
+                    0,
+                    130,
+                    130,
+                    0,
+                    142,
+                    130,
+                    0,
+                    142,
+                    0,
+                    130,
+                    0
+                ]
+            },
+            {
+                "n": [
+                    123,
+                    0,
+                    123,
+                    0,
+                    135,
+                    0,
+                    123,
+                    123,
+                    0,
+                    135,
+                    123,
+                    0,
+                    135,
+                    0,
+                    123,
+                    0,
+                    123,
+                    0,
+                    123,
+                    0,
+                    135,
+                    0,
+                    123,
+                    123,
+                    0,
+                    135,
+                    123,
+                    0,
+                    135,
+                    0,
+                    123,
+                    0
+                ]
+            },
+            {
+                "n": [
+                    135,
+                    0,
+                    135,
+                    0,
+                    147,
+                    0,
+                    135,
+                    135,
+                    0,
+                    147,
+                    135,
+                    0,
+                    147,
+                    0,
+                    135,
+                    0,
+                    135,
+                    0,
+                    135,
+                    0,
+                    147,
+                    0,
+                    135,
+                    135,
+                    0,
+                    147,
+                    135,
+                    0,
+                    147,
+                    0,
+                    135,
+                    0
+                ]
+            }
+            ]
+        },
+        {
+            "osc1_oct": 7,
+            "osc1_det": 0,
+            "osc1_detune": 0,
+            "osc1_xenv": 0,
+            "osc1_vol": 255,
+            "osc1_waveform": 3,
+            "osc2_oct": 8,
+            "osc2_det": 0,
+            "osc2_detune": 0,
+            "osc2_xenv": 0,
+            "osc2_vol": 255,
+            "osc2_waveform": 0,
+            "noise_fader": 127,
+            "env_attack": 22,
+            "env_sustain": 88,
+            "env_release": 3997,
+            "env_master": 255,
+            "fx_filter": 3,
+            "fx_freq": 4067,
+            "fx_resonance": 234,
+            "fx_delay_time": 4,
+            "fx_delay_amt": 33,
+            "fx_pan_freq": 2,
+            "fx_pan_amt": 84,
+            "lfo_osc1_freq": 0,
+            "lfo_fx_freq": 1,
+            "lfo_freq": 3,
+            "lfo_amt": 28,
+            "lfo_waveform": 0,
+            "p": [
+                0,
+                0,
+                1,
+                2,
+                1,
+                2,
+                1,
+                3
+            ],
+            "c": [{
+                "n": [
+                    0,
+                    0,
+                    142,
+                    0,
+                    154,
+                    0,
+                    0,
+                    0,
+                    142,
+                    0,
+                    0,
+                    0,
+                    154,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    142,
+                    0,
+                    154,
+                    0,
+                    0,
+                    0,
+                    142,
+                    0,
+                    0,
+                    0,
+                    154,
+                    0,
+                    0,
+                    0
+                ]
+            },
+            {
+                "n": [
+                    0,
+                    0,
+                    147,
+                    0,
+                    154,
+                    0,
+                    0,
+                    0,
+                    147,
+                    0,
+                    0,
+                    0,
+                    154,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    147,
+                    0,
+                    154,
+                    0,
+                    147,
+                    0,
+                    0,
+                    0,
+                    154,
+                    0,
+                    0,
+                    0,
+                    154,
+                    0
+                ]
+            },
+            {
+                "n": [
+                    0,
+                    0,
+                    147,
+                    0,
+                    154,
+                    0,
+                    0,
+                    0,
+                    147,
+                    0,
+                    0,
+                    0,
+                    154,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    147,
+                    0,
+                    154,
+                    0,
+                    0,
+                    0,
+                    147,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            }
+            ]
+        },
+        {
+            "osc1_oct": 8,
+            "osc1_det": 0,
+            "osc1_detune": 0,
+            "osc1_xenv": 0,
+            "osc1_vol": 0,
+            "osc1_waveform": 0,
+            "osc2_oct": 8,
+            "osc2_det": 0,
+            "osc2_detune": 0,
+            "osc2_xenv": 0,
+            "osc2_vol": 0,
+            "osc2_waveform": 0,
+            "noise_fader": 255,
+            "env_attack": 140347,
+            "env_sustain": 9216,
+            "env_release": 133417,
+            "env_master": 208,
+            "fx_filter": 2,
+            "fx_freq": 2500,
+            "fx_resonance": 16,
+            "fx_delay_time": 2,
+            "fx_delay_amt": 157,
+            "fx_pan_freq": 8,
+            "fx_pan_amt": 207,
+            "lfo_osc1_freq": 0,
+            "lfo_fx_freq": 1,
+            "lfo_freq": 2,
+            "lfo_amt": 51,
+            "lfo_waveform": 0,
+            "p": [
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+            ],
+            "c": [{
+                "n": [
+                    147,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            }]
+        }
         ],
         "rowLen": 5513,
         "endPattern": 9
